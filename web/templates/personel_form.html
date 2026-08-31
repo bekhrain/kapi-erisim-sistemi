@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block baslik %}{{ 'Personel Düzenle' if kisi else 'Yeni Personel' }}{% endblock %}
+
+{% block icerik %}
+<h1>{{ 'Personel Düzenle' if kisi else 'Yeni Personel' }}</h1>
+
+<form method="post" class="form" enctype="multipart/form-data">
+  <label for="ad_soyad">Ad Soyad</label>
+  <input type="text" id="ad_soyad" name="ad_soyad"
+         value="{{ kisi.ad_soyad if kisi else (girilen.ad_soyad if girilen else '') }}"
+         required autofocus>
+
+  {#
+    ROL, kart alanindan ONCE soruluyor. Sirasi onemli: rol kisinin
+    hangi kapilara girebilecegini ve (misafirse) kartinin ne kadar
+    gecerli olacagini belirliyor. Formun sonuna konsaydi, kaydetmeden
+    once fark edilmeyip varsayilan 'personel' ile gecilirdi - yani
+    misafire personel yetkisi verilirdi.
+  #}
+  {% set rol_deger = (kisi.rol if kisi else None)
+                     or (girilen.rol if girilen else None)
+                     or 'personel' %}
+  <label for="rol">Kişi türü</label>
+  <select id="rol" name="rol">
+    {% for anahtar, etiket in roller.items() %}
+    <option value="{{ anahtar }}" {% if rol_deger == anahtar %}selected{% endif %}>
+      {{ etiket }}
+    </option>
+    {% endfor %}
+  </select>
+  <small>
+    Kapı yetkisi kişiye tek tek değil, türüne göre verilir — örneğin
+    bir kapıya yalnızca personel girebilirken diğerine öğrenciler de
+    girebilir.
+  </small>
+
+  {% set kart_deger = (kisi.kart_uid if kisi else None)
+                      or (girilen.kart_uid if girilen else None)
+                      or '' %}
+  <label for="kart_uid">Kart Numarası (UID)</label>
+  <input type="text" id="kart_uid" name="kart_uid" class="mono"
+         value="{{ kart_deger }}"
+         placeholder="Kartı kapıya okutun, aşağıda belirecek">
+
+  <div class="kart-havuzu">
+    <div class="kart-havuzu-baslik">
+      <span>Kapıda okutulmuş, sahipsiz kartlar</span>
+      <span class="canli" id="canliDurum">● dinleniyor</span>
+    </div>
+    <div id="kartListesi">
+      {% if bekleyen %}
+        {% for k in bekleyen %}
+        <button type="button" class="kart-secenek"
+                onclick="kartSec('{{ k.uid }}', this)">
+          <span class="mono">{{ k.uid }}</span>
+          <span class="alt-yazi">{{ k.zaman.strftime('%H:%M:%S') }}
+            &middot; {{ k.deneme }} deneme</span>
+        </button>
+        {% endfor %}
+      {% else %}
+        <p class="alt-yazi bos-kart">
+          Henüz okutulmuş kart yok. Kartı kapı cihazına okutun —
+          en geç 1 dakika içinde burada belirir.
+        </p>
+      {% endif %}
+    </div>
+  </div>
+  <small>
+    <strong>Nasıl çalışır:</strong> yeni kartı kapı cihazına okutun. Cihaz
+    tanımadığı için reddeder ama numarasını kaydeder. Numara yukarıda
+    listelenir, tıklayınca kutuya dolar. Elle yazmanız gerekmez.
+    <br>
+    Kaydeden ve doğrulayan aynı okuyucu olduğu için numara formatı
+    kesinlikle uyuşur.
+  </small>
+
+  <label for="pin">PIN</label>
+  <input type="password" id="pin" name="pin" inputmode="numeric"
+         placeholder="{{ 'Değiştirmek istemiyorsanız boş bırakın' if kisi else '6 haneli' }}">
+  <small>
+    PIN veritabanına düz metin olarak yazılmaz; PBKDF2-SHA256 ile
+    özetlenir. Unutulursa geri okunamaz, yenisi verilir.
+  </small>
+
+  <label for="fotograf">Fotoğraf</label>
+  {% if kisi and kisi.foto_yolu %}
+    <div class="foto-onizleme">
+      <img src="{{ url_for('static', filename=kisi.foto_yolu) }}" alt="{{ kisi.ad_soyad }}">
+      <span class="alt-yazi">Mevcut fotoğraf. Yeni dosya seçerseniz değişir.</span>
+    </div>
+  {% endif %}
+  <input type="file" id="fotograf" name="fotograf" accept=".jpg,.jpeg,.png">
+  <small>
+    JPG veya PNG, en fazla 5 MB. Bu fotoğraf <em>yüz tanıma için
+    kullanılmaz</em>; geçiş kayıtlarına bakarken kişiyi gözle
+    doğrulamaya yarar. Yüz tanıma kaydı kamera kapı cihazında olduğu
+    için Pi'nin admin panelinden alınır.
+  </small>
+
+  <div class="form-dugmeler">
+    <button type="submit">Kaydet</button>
+    <a class="baglanti" href="{{ url_for('personel_listesi') }}">Vazgeç</a>
+  </div>
+</form>
+
+<script>
+// Kart havuzunu sayfayi yenilemeden tazeler. Boylece formu doldurmaya
+// baslayip kapiya gidip karti okutan kullanici geri donduğunde yazdigi
+// isim silinmemis olur.
+function kartSec(uid, dugme) {
+  document.getElementById('kart_uid').value = uid;
+  document.querySelectorAll('.kart-secenek').forEach(function (d) {
+    d.classList.remove('secili');
+  });
+  if (dugme) { dugme.classList.add('secili'); }
+}
+
+function kartlariYenile() {
+  fetch("{{ url_for('api_bekleyen_kartlar') }}")
+    .then(function (c) { return c.json(); })
+    .then(function (veri) {
+      var kutu = document.getElementById('kartListesi');
+      var secili = document.getElementById('kart_uid').value;
+      if (!veri.kartlar.length) {
+        kutu.innerHTML = '<p class="alt-yazi bos-kart">Henüz okutulmuş ' +
+          'kart yok. Kartı kapı cihazına okutun — en geç 1 dakika ' +
+          'içinde burada belirir.</p>';
+        return;
+      }
+      kutu.innerHTML = veri.kartlar.map(function (k) {
+        return '<button type="button" class="kart-secenek' +
+          (k.uid === secili ? ' secili' : '') +
+          '" onclick="kartSec(\'' + k.uid + '\', this)">' +
+          '<span class="mono">' + k.uid + '</span>' +
+          '<span class="alt-yazi">' + k.zaman + ' &middot; ' +
+          k.deneme + ' deneme</span></button>';
+      }).join('');
+    })
+    .catch(function () {
+      document.getElementById('canliDurum').textContent = '● bağlantı yok';
+    });
+}
+
+setInterval(kartlariYenile, 5000);
+</script>
+{% endblock %}

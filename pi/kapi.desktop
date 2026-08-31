@@ -1,0 +1,27 @@
+[Desktop Entry]
+Type=Application
+Name=Kapi Erisim Sistemi
+Comment=RFID / PIN / yuz ile kapi acma arayuzu
+Exec=/home/kapi/kapi/pi/kapi-baslat.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true
+
+# =====================================================================
+#  Kurulum:
+#      mkdir -p ~/.config/autostart
+#      cp ~/kapi/pi/kapi.desktop ~/.config/autostart/
+#      chmod +x ~/kapi/pi/kapi-baslat.sh
+#
+#  NEDEN systemd SERVISI DEGIL
+#  ---------------------------
+#  Uygulama grafik arayuzlu. systemd sistem servisi olarak calistirmak,
+#  ekran oturumunun ortam degiskenlerini (WAYLAND_DISPLAY veya DISPLAY,
+#  XDG_RUNTIME_DIR) elle tasimayi gerektirir. Raspberry Pi OS Bookworm
+#  varsayilan olarak Wayland kullaniyor; bu degiskenler oturum acilinca
+#  olusuyor ve sabit yazilamiyor. Otomatik baslatma girdisi ise zaten
+#  oturumun ICINDE calisir, dogru ortami hazir bulur.
+#
+#  Pi otomatik oturum aciyor (raspi-config > Boot > Desktop Autologin),
+#  dolayisiyla elektrik gelince kimse mudahale etmeden arayuz aciliyor.
+#  Cokme durumunda yeniden baslatmayi kapi-baslat.sh ustleniyor.
+# =====================================================================

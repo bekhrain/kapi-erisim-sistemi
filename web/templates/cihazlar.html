@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block baslik %}Cihazlar - Kapı Erişim Sistemi{% endblock %}
+
+{% block icerik %}
+<h1>Cihazlar</h1>
+<p class="sayfa-alt">
+  Sisteme bağlı kapı cihazları. Her cihaz kendi geçiş kayıtlarını kendi
+  numara dizisiyle gönderir.
+</p>
+
+{#
+  Satir formlari TABLONUN DISINDA duruyor, alanlar onlara form="..."
+  ile baglaniyor. Sebep: <form> etiketi <tr> icinde ya da iki <td>
+  arasinda gecerli degil - tarayici onu tablodan disari tasir ve
+  icindeki alanlar formdan kopar, "Kaydet" bos veri gonderir.
+  HTML5'in form ozniteligi ayni isi gecerli isaretlemeyle yapiyor.
+#}
+{% for c in cihazlar %}
+<form method="post" action="{{ url_for('cihaz_guncelle', cihaz_id=c.id) }}"
+      id="cihaz{{ c.id }}"></form>
+<form method="post" action="{{ url_for('cihaz_durum', cihaz_id=c.id) }}"
+      id="durum{{ c.id }}"></form>
+{% endfor %}
+
+<div class="tablo-sarmal">
+<table>
+  <thead>
+    <tr>
+      <th>Kimlik</th><th>Cihaz adı</th><th>Konum</th>
+      <th>Girebilenler</th>
+      <th class="sayisal">Bugün</th><th class="sayisal">Toplam</th>
+      <th>Son iletişim</th><th>Durum</th><th>İşlem</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in cihazlar %}
+    <tr class="{% if c.durum != 'acik' %}pasif{% endif %}">
+      <td class="mono kimlik">{{ c.id }}</td>
+      <td>
+        <input type="text" name="cihaz_adi" form="cihaz{{ c.id }}"
+               value="{{ c.cihaz_adi }}" class="satir-alan" required>
+      </td>
+      <td>
+        <input type="text" name="konum" form="cihaz{{ c.id }}"
+               value="{{ c.konum or '' }}" class="satir-alan"
+               placeholder="örn. Bilgi İşlem girişi">
+      </td>
+      {#
+        Kutular satir formuna bagli (form="cihaz{id}"), yani "Kaydet"
+        ile birlikte gonderiliyor. Ayri bir form acilsaydi ad/konum ile
+        rolleri iki ayri islemde kaydetmek gerekirdi ve biri
+        unutulabilirdi.
+      #}
+      <td class="rol-kutulari">
+        {% for anahtar, etiket in roller.items() %}
+        <label>
+          <input type="checkbox" name="roller" value="{{ anahtar }}"
+                 form="cihaz{{ c.id }}"
+                 {% if anahtar in c.roller %}checked{% endif %}>
+          {{ etiket }}
+        </label>
+        {% endfor %}
+      </td>
+      <td class="sayisal">{{ c.bugun or 0 }}</td>
+      <td class="sayisal">{{ c.kayit_sayisi or 0 }}</td>
+      <td class="mono">
+        {{ c.son_iletisim.strftime('%d.%m %H:%M') if c.son_iletisim else 'hiç' }}
+      </td>
+      {#
+        Rozet once KASITLI durumu, sonra baglantiyi soyluyor. Sirasi
+        ters olsaydi hizmet disi birakilmis bir kapi "Ulasilamiyor"
+        yazardi ve kendi kapattigimiz sey ariza gibi okunurdu.
+      #}
+      <td>
+        {% if c.durum == 'yerel' %}
+          <span class="rozet gri">Hizmet dışı</span>
+        {% elif c.durum == 'kapali' %}
+          <span class="rozet sari">Kapalı</span>
+          {% if not c.cevrimici %}
+            <span class="rozet kirmizi">ulaşılamıyor</span>
+          {% endif %}
+        {% elif c.cevrimici %}
+          <span class="rozet yesil">Çevrimiçi</span>
+        {% else %}
+          <span class="rozet kirmizi">Ulaşılamıyor</span>
+        {% endif %}
+      </td>
+      {#
+        Hedef durum dugmenin KENDI degerinde (name="hedef"). Gonderen
+        dugmenin adi ve degeri forma dahil olur; boylece uc secenek
+        icin uc ayri form acmak gerekmiyor.
+
+        Cihazin ICINDE BULUNDUGU hal dugme olarak gosterilmiyor:
+        gosterilseydi hicbir sey yapmayan bir dugme olurdu ve basan
+        kisi bir sey degistirdigini sanirdi.
+      #}
+      <td class="islemler">
+        <button type="submit" form="cihaz{{ c.id }}" class="ince sade">Kaydet</button>
+        {% if c.durum != 'acik' %}
+          <button type="submit" form="durum{{ c.id }}" name="hedef" value="acik"
+                  class="ince">Hizmete al</button>
+        {% endif %}
+        {% if c.durum != 'yerel' %}
+          <button type="submit" form="durum{{ c.id }}" name="hedef" value="yerel"
+                  class="ince sade"
+                  title="Sunucu bağlantısını keser. Kapı çalışmaya devam eder, kararı kendi yerel listesinden verir.">Hizmetten çıkar</button>
+        {% endif %}
+        {% if c.durum != 'kapali' %}
+          <button type="submit" form="durum{{ c.id }}" name="hedef" value="kapali"
+                  class="ince tehlike"
+                  title="Kapıyı tamamen kapatır: kart, şifre ve yüz reddedilir.">Kapıyı kapat</button>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="bos">Kayıtlı cihaz yok.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<p class="not">
+  <strong>Kimlik numarası önemli.</strong> Bir cihaz eklemek iki adımlı iş:
+  burada satır oluşturulur, sonra cihazın kendisine bu satırın numarası
+  tanıtılır — Pi üzerinde <code>data/gizli.json</code> içine
+  <code>"KAPI_DEVICE_ID": "2"</code> yazılır. Numara tutmazsa cihaz kayıt
+  gönderemez, kuyruk sessizce birikir ve panelde hiçbir şey görünmez.
+</p>
+
+<h2>Yeni cihaz</h2>
+<form method="post" class="form">
+  <label for="cihaz_adi">Cihaz adı</label>
+  <input type="text" id="cihaz_adi" name="cihaz_adi" required
+         placeholder="kapi-02">
+  <small>Raporlar ada göre okunuyor; iki kapıya aynı ad verilemez.</small>
+
+  <label for="konum">Konum</label>
+  <input type="text" id="konum" name="konum"
+         placeholder="örn. Sunucu odası">
+
+  <div class="form-dugmeler">
+    <button type="submit">Cihazı ekle</button>
+    <a class="baglanti" href="{{ url_for('panel') }}">Vazgeç</a>
+  </div>
+</form>
+
+<p class="not dikkat">
+  <strong>Üç durum birbirinden farklı.</strong>
+  <em>Hizmetten çıkar</em> kapıyı kapatmaz — yalnızca sunucu bağlantısını
+  keser. Kapı çalışmaya devam eder, kararını kendi yerel listesinden verir
+  ve geçişler cihazda birikir; hizmete alınınca sunucuya akar.
+  <em>Kapıyı kapat</em> ise kimseyi almaz: kart da şifre de yüz de
+  reddedilir, ama bağlantı açık kalır — yoksa kapıyı geri açmak için
+  birinin cihazın yanına gitmesi gerekirdi.
+  <strong>Cihaz silinemez;</strong> geçiş kayıtları cihaza bağlı, silinseydi
+  o kayıtların hangi kapıdan geldiği kaybolurdu.
+  <br><br>
+  <strong>Girebilenler</strong> sütunu kişiye değil <em>türe</em> göre
+  yetki verir — örneğin bu kapıya yalnızca personel, diğerine personel ve
+  öğrenciler. Değişiklik "Kaydet" ile birlikte kaydedilir ve kapıya birkaç
+  saniye içinde iner; kapı bağlantısı kopsa bile kural orada saklı
+  olduğu için uygulanmaya devam eder. Hepsinin işaretini kaldıramazsınız:
+  kapıyı herkese kapatmanın yolu <em>Kapıyı kapat</em> düğmesidir.
+</p>
+{% endblock %}

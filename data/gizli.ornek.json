@@ -1,0 +1,23 @@
+{
+  "_aciklama": [
+    "Bu dosyanin adini 'gizli.json' yapip Pi uzerine koyun.",
+    "Icindeki degerleri gercek sifrelerle degistirin.",
+    "Bu ORNEK dosya surum kontrolune girer, gizli.json GIRMEZ.",
+    "",
+    "Pi uzerinde izinleri daraltin (sadece calistiran kullanici okusun):",
+    "    chmod 600 ~/kapi/data/gizli.json",
+    "",
+    "Alternatif: ayni degerleri ortam degiskeni olarak da verebilirsiniz.",
+    "Ortam degiskeni bu dosyadan ONCE gelir."
+  ],
+
+  "KAPI_DB_HOST": "10.40.80.189",
+  "KAPI_DB_PORT": "3306",
+  "KAPI_DB_USER": "kapi_cihaz",
+  "KAPI_DB_PASSWORD": "BURAYA-GERCEK-SIFRE",
+  "KAPI_DB_NAME": "kapi_sistemi",
+  "KAPI_DEVICE_ID": "1",
+
+  "KAPI_ADMIN_PIN": "BURAYA-YENI-ADMIN-PIN",
+  "KAPI_DEMO_PAROLA": ""
+}

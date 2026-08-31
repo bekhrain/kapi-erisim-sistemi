@@ -1,0 +1,32 @@
+# --- Her ortam (Windows gelistirme + Raspberry Pi) ---
+PyQt5
+# 4.5.4+ SART: yuz tanima cv2.FaceDetectorYN (YuNet) ve
+# cv2.FaceRecognizerSF (SFace) siniflarini kullaniyor. Bu ikisi DUZ
+# opencv-python icinde gelir; opencv-contrib GEREKMEZ.
+opencv-python>=4.5.4
+numpy
+
+# --- Sadece Raspberry Pi (donanim) ---
+# RFID icin PAKET GEREKMEZ. 13,56 MHz USB okuyucu (lsusb: ffff:0035
+# "IC Reader") kendini klavye olarak tanitir; /dev/input altindaki olay
+# aygiti struct + fcntl ile dogrudan okunuyor. evdev paketi de gerekmez
+# (Pi'de internet yok, ek bagimlilik istemiyoruz).
+# Eski MFRC522 (SPI) surumu birakildi: mfrc522 / spidev artik gereksiz.
+#
+# Selenoid kilit rolesi + buzzer + 3'lu trafik lambasi + MC38 manyetik
+# sensor icin GPIO lazim. app/hardware/kapi_donanim.py 'gpiozero'
+# kullanir; Raspberry Pi OS ile HAZIR gelir (internet gerekmez). Ayri
+# kurulmasi gerekiyorsa Pi'de su satiri acin:
+# gpiozero
+# Masaustunde gerekmez: modul yoksa otomatik "mock" moda gecer.
+
+# --- Yuz tanima model dosyalari (pip ile GELMEZ) ---
+# Iki ONNX dosyasi data/modeller/ klasorune konur:
+#   face_detection_yunet_2023mar.onnx      (~230 KB)
+#   face_recognition_sface_2021dec.onnx    (~37 MB)
+# Kaynak: github.com/opencv/opencv_zoo
+# Pi'de internet yok; dosyalar scp ile atilir. Bkz. KURULUM-YUZ.md
+#
+# face_recognition / dlib GEREKMEZ - denenmedi ve gerekmiyor: OpenCV'nin
+# kendi SFace modeli ayni isi ek derleme yuku olmadan yapiyor (dlib'i
+# Pi'de derlemek yarim saat surer ve 1 GB'in uzerinde RAM ister).

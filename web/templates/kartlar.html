@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block baslik %}Tanımsız Kartlar{% endblock %}
+
+{% block icerik %}
+<h1>Tanımsız Kartlar</h1>
+
+{#
+  Kapida okutulmus ama kimseye tanimlanmamis kartlar (19.08.2026'da
+  Genel Durum sayfasindan buraya tasindi).
+
+  Genel Durum artik surekli acik duran bir izleme ekrani: orada
+  yalnizca "su an ne oluyor" durur. Bu liste ise bir YAPILACAK IS
+  listesi - bakildigi anda islem yapilir ve biter. Ikisi ayni sayfada
+  oldugunda, is listesi izleme ekraninin ustunu kapliyordu.
+
+  Kayitlar gecis_kaydi tablosundan turetiliyor; ayri bir "bekleyen
+  kart" tablosu yok. Kart okutuldugunda zaten bir kayit dusuyor,
+  ikinci bir yere daha yazmak ayni bilgiyi iki yerde tutmak olurdu.
+#}
+{% if bekleyen %}
+<p class="sayfa-alt">
+  Son {{ dakika }} dakika içinde okutulmuş, kimseye tanımlı olmayan
+  kartlar. Satıra tıklandığında kart numarası personel formuna
+  taşınır.
+</p>
+
+<div class="bekleyen-liste">
+  {% for k in bekleyen %}
+  <a class="bekleyen-satir"
+     href="{{ url_for('personel_ekle') }}?kart={{ k.uid }}">
+    <span class="uid">{{ k.uid }}</span>
+    <span class="ne-zaman">
+      {{ k.zaman.strftime('%d.%m.%Y %H:%M') }} &middot;
+      {{ k.deneme }} kez okutuldu
+    </span>
+    <span class="baglanti">Kişiye tanımla →</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bos-durum">
+  Bekleyen kart yok.
+  <div class="bos-alt">
+    Kapıda tanımsız bir kart okutulduğunda burada listelenir.
+  </div>
+</div>
+{% endif %}
+{% endblock %}

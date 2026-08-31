@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block baslik %}Kapı Erişim Sistemi{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{% if session.girisli %}oturumlu{% endif %} {% block sayfa_sinifi %}{% endblock %}">
+{% if session.girisli %}
+{#
+  Gezinme SOL tarafta. Ust cubukta duruyordu; sola alindiginda iki sey
+  kazanildi: (1) menu buyudukce yatay yer sikintisi olmuyor, yeni sayfa
+  eklemek bir satir, (2) tablolar ve raporlar icin sayfanin tam yuksekligi
+  kaliyor - bu panelin isi genis tablolar gostermek.
+
+  Aktif sayfa isaretleniyor. Onceki surumde hicbir baglanti "buradasin"
+  demiyordu; dort sayfa da birbirine benzedigi icin kullanici hangi
+  sayfada oldugunu ancak basliktan anliyordu.
+#}
+<aside class="yan">
+  <div class="marka">
+    <span class="marka-ad">Kapı Erişim</span>
+    <span class="marka-alt">Yönetim Paneli</span>
+  </div>
+
+  <nav>
+    <a href="{{ url_for('panel') }}"
+       class="{% if istek_yolu == '/' %}aktif{% endif %}">Genel Durum</a>
+    <a href="{{ url_for('personel_listesi') }}"
+       class="{% if istek_yolu.startswith('/personel') %}aktif{% endif %}">Kişiler</a>
+    <a href="{{ url_for('kayitlar') }}"
+       class="{% if istek_yolu.startswith('/kayitlar') %}aktif{% endif %}">Geçiş Kayıtları</a>
+    <a href="{{ url_for('raporlar') }}"
+       class="{% if istek_yolu.startswith('/raporlar') %}aktif{% endif %}">Raporlar</a>
+    <a href="{{ url_for('cihazlar') }}"
+       class="{% if istek_yolu.startswith('/cihazlar') %}aktif{% endif %}">Cihazlar</a>
+    {# Sayi rozeti: bekleyen kart fark edilmezse kimsenin aramadigi
+       bir istir - kapida kart okutan panele bakmaz, panele bakan da
+       kapida ne okutuldugunu bilmez. #}
+    <a href="{{ url_for('tanimsiz_kartlar') }}"
+       class="{% if istek_yolu.startswith('/kartlar') %}aktif{% endif %}">
+      Tanımsız Kartlar
+      {% if bekleyen_kart %}<span class="menu-rozet">{{ bekleyen_kart }}</span>{% endif %}
+    </a>
+  </nav>
+
+  {#
+    BILDIRIM ZILI - sol menude, cunku "bir sey oldu mu" sorusu hangi
+    sayfada olursan ol gecerlidir. Genel Durum sayfasinda dursaydi,
+    Personel ya da Kayitlar sayfasindayken kapinin koptugu fark
+    edilmezdi.
+
+    Uc olayi toplar: kapi baglantisi koptu/geldi, sunucu durdu/geldi
+    ve -asil onemlisi- baglanti kopukken kac kisi gecti. Sonuncusu
+    olmasa panelde bir bosluk kalirdi: kopukken kapi calismaya devam
+    eder ama kayitlar cihazda birikir, sunucuda o an gorunmez.
+    Baglanti gelince toplu inip gecmise karisirlar ve kimse "bunlar
+    cevrimdisi alinmis kararlardi" demez.
+
+    Liste, menunun DAR oldugu icin yanina acilir (sabit konumlu bir
+    panel). Menu icine sigdirilsaydi 216 piksele sikisir ve okunmazdi.
+
+    Acik/kapali durumu BODY uzerinde tutuluyor: Genel Durum sayfasi
+    10 saniyede bir kendini tazeliyor ve bu bolumun icerigi
+    degisiyor; durum bolumun icinde saklansaydi acik liste her
+    tazelemede kapanirdi.
+  #}
+  <div class="zil-alan" id="zil-alan">
+    <button type="button" class="zil-dugme{% if bildirim.yeni %} dolu{% endif %}"
+            id="zil-dugme">
+      <span class="zil-ikon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none"
+             stroke="currentColor" stroke-width="1.9"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+        </svg>
+        {% if bildirim.yeni %}<span class="zil-rozet">{{ bildirim.yeni }}</span>{% endif %}
+      </span>
+      <span class="zil-yazi">Bildirimler</span>
+    </button>
+
+    <div class="zil-panel">
+      <div class="zil-basi">
+        <span>Bildirimler</span>
+        <button type="button" class="zil-kapat" id="zil-kapat">&times;</button>
+      </div>
+      <div class="zil-liste">
+        {% for o in bildirim.olaylar %}
+        <div class="zil-olay {{ o.tur }}{% if o.yeni %} yeni{% endif %}">
+          <div class="olay-ust">
+            <span class="olay-baslik">{{ o.baslik }}</span>
+            <span class="olay-zaman">{{ o.zaman.strftime('%d.%m %H:%M') }}</span>
+          </div>
+          <div class="olay-metin">{{ o.metin }}</div>
+          {% if o.sayim and o.sayim.gecis %}
+          {#
+            Kopukken alinan kararlar. "Kisi" ve "okutma" ayri yaziliyor:
+            ayni kisinin ard arda uc kez okutmasi "uc kisi girdi" diye
+            okunmasin.
+          #}
+          <div class="olay-sayim">
+            Bu sürede <strong>{{ o.sayim.kisi }} kişi</strong> yerel
+            listeden geçti ({{ o.sayim.gecis }} okutma) — kayıtlar
+            sunucuya aktarıldı.
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="zil-bos">Kayda değer bir olay yok.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="yan-alt">
+    <a href="{{ url_for('cikis') }}" class="cikis">Çıkış</a>
+  </div>
+</aside>
+{% endif %}
+
+<div class="sarmal">
+  <main class="govde">
+    {% with mesajlar = get_flashed_messages(with_categories=true) %}
+      {% for tur, mesaj in mesajlar %}
+        <div class="bildirim {{ tur }}">{{ mesaj }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    {% block icerik %}{% endblock %}
+  </main>
+
+  <footer class="alt">
+    Erciyes Üniversitesi Bilgi İşlem Daire Başkanlığı &middot; Staj Projesi
+  </footer>
+</div>
+
+{% if session.girisli %}
+<script>
+// Zil ac/kapa. Dinleyici BELGE uzerinde: Genel Durum sayfasi bu
+// bolumu tazeledigi icin dugme dugumu yenisiyle degisiyor; dugmeye
+// dogrudan baglanan bir dinleyici ilk tazelemede kopardi.
+document.addEventListener("click", function (olay) {
+  var hedef = olay.target;
+  if (!hedef.closest) { return; }
+
+  if (hedef.closest("#zil-kapat")) {
+    document.body.classList.remove("zil-acik");
+    return;
+  }
+  if (hedef.closest("#zil-dugme")) {
+    var acildi = document.body.classList.toggle("zil-acik");
+    if (!acildi) { return; }
+    // Acilinca okunmus sayilir. Rozet hemen kaldiriliyor; sunucudan
+    // cevap beklenmiyor, bu yalnizca gorsel bir isaret.
+    var rozet = document.querySelector(".zil-rozet");
+    if (rozet) { rozet.remove(); }
+    var dugme = document.querySelector(".zil-dugme");
+    if (dugme) { dugme.classList.remove("dolu"); }
+    fetch("/bildirimler/okundu", {
+      method: "POST", credentials: "same-origin"
+    }).catch(function () { /* sonraki acilista yine denenir */ });
+    return;
+  }
+  // Panelin disina tiklaninca kapansin.
+  if (!hedef.closest(".zil-panel")) {
+    document.body.classList.remove("zil-acik");
+  }
+});
+</script>
+{% endif %}
+</body>
+</html>

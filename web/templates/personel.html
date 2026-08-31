@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block baslik %}Personel - Kapı Erişim Sistemi{% endblock %}
+
+{% block icerik %}
+<div class="baslik-satiri">
+  <h1>Kişiler</h1>
+  <a class="dugme" href="{{ url_for('personel_ekle') }}">+ Yeni Kişi</a>
+</div>
+
+{#
+  ROL FILTRESI. Sol menude uc ayri sayfa acilmadi: uc sayfa ayni
+  tabloyu, ayni sutunlari ve ayni islem dugmelerini uc kez tekrar
+  ederdi. Filtre serdi ayni isi yapiyor ve "hepsi" gorunumunu de
+  koruyor - bir kart numarasini ararken kisinin turunu bilmek
+  gerekmiyor.
+
+  Sayilar filtreden BAGIMSIZ: "Misafir (3)" yazan dugmeye basildiginda
+  3 satir gelmeli.
+#}
+<div class="rol-serit">
+  <a class="rol-dugme {% if not rol %}secili{% endif %}"
+     href="{{ url_for('personel_listesi', q=arama or None) }}">
+    Hepsi <span class="adet">{{ toplam }}</span>
+  </a>
+  {% for anahtar, etiket in roller.items() %}
+  <a class="rol-dugme {% if rol == anahtar %}secili{% endif %}"
+     href="{{ url_for('personel_listesi', rol=anahtar, q=arama or None) }}">
+    {{ etiket }} <span class="adet">{{ sayilar.get(anahtar, 0) }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<form class="arama" method="get">
+  {# Rol secimi aramada KAYBOLMASIN: gizli alan onu tasiyor. #}
+  {% if rol %}<input type="hidden" name="rol" value="{{ rol }}">{% endif %}
+  <input type="text" name="q" value="{{ arama }}" placeholder="Ad soyad veya kart numarası ara">
+  <button type="submit">Ara</button>
+  {% if arama %}<a class="baglanti" href="{{ url_for('personel_listesi', rol=rol or None) }}">Temizle</a>{% endif %}
+</form>
+
+<div class="tablo-sarmal">
+<table>
+  <thead>
+    <tr>
+      <th></th><th>Ad Soyad</th><th>Tür</th><th>Kart No</th><th>PIN</th>
+      <th>Yüz</th><th>Kayıt</th><th>Durum</th><th>İşlem</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for k in kisiler %}
+    <tr class="{% if not k.yetkili_mi %}pasif{% endif %}">
+      <td>
+        {% if k.foto_yolu %}
+          <img class="avatar" src="{{ url_for('static', filename=k.foto_yolu) }}"
+               alt="{{ k.ad_soyad }}">
+        {% else %}
+          <span class="avatar bos-avatar">{{ k.ad_soyad[0]|upper }}</span>
+        {% endif %}
+      </td>
+      <td>{{ k.ad_soyad }}</td>
+      <td><span class="rol-rozet {{ k.rol }}">{{ roller.get(k.rol, k.rol) }}</span></td>
+      <td class="mono">{{ k.kart_uid or '-' }}</td>
+      <td>{{ 'var' if k.pin_ozeti else '-' }}</td>
+      <td>{{ 'var' if k.yuz_kayitli else '-' }}</td>
+      <td>{{ k.kayit_tarihi.strftime('%d.%m.%Y') if k.kayit_tarihi else '-' }}</td>
+      <td>
+        {% if k.yetkili_mi %}
+          <span class="rozet yesil">Yetkili</span>
+        {% else %}
+          <span class="rozet kirmizi">Erişim kapalı</span>
+        {% endif %}
+      </td>
+      <td class="islemler">
+        <a class="baglanti" href="{{ url_for('personel_duzenle', kisi_id=k.id) }}">Düzenle</a>
+        <form method="post" action="{{ url_for('personel_yetki', kisi_id=k.id) }}">
+          <button type="submit" class="ince">
+            {{ 'Erişimi kapat' if k.yetkili_mi else 'Erişimi aç' }}
+          </button>
+        </form>
+        <form method="post" action="{{ url_for('personel_sil', kisi_id=k.id) }}"
+              onsubmit="return confirm('{{ k.ad_soyad }} silinecek. Emin misiniz?')">
+          <button type="submit" class="ince tehlike">Sil</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="9" class="bos">
+      {% if arama or rol %}Bu filtreye uyan kişi yok.{% else %}Kayıtlı kişi yok.{% endif %}
+    </td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<p class="not">
+  <strong>Silmek yerine "Erişimi kapat"ı tercih edin.</strong> Kişi silinirse
+  geçmiş kayıtları "(bilinmiyor)" olarak görünür. Erişimi kapatmak kartı
+  aynı şekilde geçersiz kılar ama denetim izini bozmaz.
+</p>
+{% endblock %}

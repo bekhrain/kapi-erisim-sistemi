@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block baslik %}Giriş - Kapı Erişim Sistemi{% endblock %}
+
+{% block icerik %}
+<div class="giris-kutu">
+  <h1>Kapı Erişim Sistemi</h1>
+  <p class="alt-yazi">Yönetim paneline giriş</p>
+  <form method="post">
+    <label for="parola">Panel parolası</label>
+    <input type="password" id="parola" name="parola" autofocus required>
+    <button type="submit">Giriş</button>
+  </form>
+</div>
+{% endblock %}

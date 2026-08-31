@@ -1,0 +1,25 @@
+# Gizli bilgiler - ASLA paylasilmaz
+data/gizli.json
+
+# Yerel veritabani ve yuz kareleri (kisisel veri)
+data/access.db
+data/access.db-wal
+data/access.db-shm
+data/faces/
+data/users.json*
+
+# Web arayuzune yuklenen personel fotograflari (kisisel veri)
+web/static/fotograf/
+
+# Yuz tanima model dosyalari (~37 MB, depoya girmez).
+# Kaynak: github.com/opencv/opencv_zoo - kurulum adimlari KURULUM.md'de.
+data/modeller/
+
+# Sunucu gunlukleri
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

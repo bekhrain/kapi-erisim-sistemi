@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block baslik %}Geçiş Kayıtları{% endblock %}
+
+{% block icerik %}
+<h1>Geçiş Kayıtları</h1>
+
+<form class="filtre" method="get">
+  <div>
+    <label for="yontem">Yöntem</label>
+    <select id="yontem" name="yontem">
+      <option value="">Hepsi</option>
+      <option value="kart"  {% if yontem == 'kart'  %}selected{% endif %}>Kart</option>
+      <option value="sifre" {% if yontem == 'sifre' %}selected{% endif %}>Şifre</option>
+      <option value="yuz"   {% if yontem == 'yuz'   %}selected{% endif %}>Yüz</option>
+    </select>
+  </div>
+  <div>
+    <label for="sonuc">Sonuç</label>
+    <select id="sonuc" name="sonuc">
+      <option value="">Hepsi</option>
+      <option value="1" {% if sonuc == '1' %}selected{% endif %}>İzin verildi</option>
+      <option value="0" {% if sonuc == '0' %}selected{% endif %}>Reddedildi</option>
+    </select>
+  </div>
+  <div>
+    <label for="cihaz">Kapı</label>
+    <select id="cihaz" name="cihaz">
+      <option value="">Hepsi</option>
+      {% for c in cihaz_secenekleri %}
+      <option value="{{ c.id }}" {% if cihaz == c.id|string %}selected{% endif %}>
+        {{ c.cihaz_adi }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="baslangic">Başlangıç</label>
+    <input type="date" id="baslangic" name="baslangic" value="{{ baslangic }}">
+  </div>
+  <div>
+    <label for="bitis">Bitiş</label>
+    <input type="date" id="bitis" name="bitis" value="{{ bitis }}">
+  </div>
+  <div class="filtre-dugme">
+    <button type="submit">Filtrele</button>
+    <a class="baglanti" href="{{ url_for('kayitlar') }}">Sıfırla</a>
+  </div>
+</form>
+
+{#
+  Ozet TUM eslesme uzerinden; tablo ise en fazla 500 satir gosteriyor.
+  Ikisi ayni sayi degilse bu acikca yaziliyor - "3 red var" deyip
+  aslinda 40 tanesini gizlemek raporu yanlis okutur.
+#}
+<div class="kart-izgara ozet-serit">
+  <div class="kart">
+    <div class="sayi">{{ ozet.toplam or 0 }}</div>
+    <div class="etiket">Filtreye uyan kayıt</div>
+    {% if (ozet.toplam or 0) > satirlar|length %}
+      <div class="ek">tabloda ilk {{ satirlar|length }} tanesi</div>
+    {% endif %}
+  </div>
+  <div class="kart">
+    <div class="sayi">{{ ozet.izin or 0 }}</div>
+    <div class="etiket">İzin verildi</div>
+  </div>
+  <div class="kart {% if ozet.red %}uyari{% endif %}">
+    <div class="sayi">{{ ozet.red or 0 }}</div>
+    <div class="etiket">Reddedildi</div>
+  </div>
+</div>
+
+<div class="tablo-sarmal">
+<table>
+  <thead>
+    <tr><th>Zaman</th><th>Kişi</th><th>Yöntem</th><th>Sonuç</th>
+        <th>Cihaz</th><th>Detay</th></tr>
+  </thead>
+  <tbody>
+    {% for k in satirlar %}
+    <tr>
+      <td class="mono">{{ k.zaman.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+      <td>{{ k.ad_soyad }}</td>
+      <td>{{ k.yontem }}</td>
+      <td>
+        {% if k.sonuc %}
+          <span class="rozet yesil">İzin verildi</span>
+        {% else %}
+          <span class="rozet kirmizi">Reddedildi</span>
+        {% endif %}
+      </td>
+      <td>{{ k.cihaz_adi or '-' }}</td>
+      <td class="detay">{{ k.detay or '' }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="bos">Bu filtreye uyan kayıt yok.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

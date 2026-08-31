@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block baslik %}Genel Durum - Kapı Erişim Sistemi{% endblock %}
+{% block sayfa_sinifi %}panel-sayfa{% endblock %}
+
+{% block icerik %}
+<h1>Genel Durum</h1>
+
+{#
+  IKI SUTUN (19.08.2026). Onceki duzende durum kutulari ve sayaclar
+  sayfanin ustunde genis bir serit halindeydi; giris listesi ancak
+  ekranin yarisindan sonra basliyor ve buyuk ekranda sagda genis bir
+  bosluk kaliyordu.
+
+  Artik ana alan TEK ISE ayrilmis durumda: kim girdi. Olcumler ve
+  sayaclar saga, dar bir sutuna cekildi - goz ucuyla bakilir, yer
+  kaplamaz. Durum kutulari daha buyuk cunku sabah ilk sorulan soru
+  onlar; sayaclar orantili olarak kucuk.
+#}
+<div class="panel-duzen">
+
+<div class="panel-ana">
+
+{#
+  "Sunucu/panel yeniden basladi" uyarisi buradan KALDIRILDI (19.08.2026).
+  Ayni olay artik sol menudeki zilde, gecmisiyle birlikte duruyor.
+  Iki yerde birden gosterilince sayfanin ustunu her yeniden baslatmada
+  bir uyari serdi kapliyor ve asil listeyi asagi itiyordu.
+#}
+{% if ozet.yuz_tutarsiz %}
+{#
+  "Yuzu kayitli" isaretli ama karsilastirilacak vektoru olmayan kayit.
+  Panelde kisi yuzu varmis gibi gorunur, kapida hicbir zaman taninmaz ve
+  hicbir yerde hata cikmaz. Bu yuzden ayrica uyariliyor.
+#}
+<div class="bildirim uyari">
+  <strong>{{ ozet.yuz_tutarsiz }} kişide</strong> yüz işaretli görünüyor ama
+  karşılaştırılacak veri yok — bu kişiler kapıda yüzle giremez.
+  Fotoğrafı yeniden yükleyerek düzeltin.
+</div>
+{% endif %}
+
+{#
+  "Kapida okutulan tanimsiz kartlar" listesi buradan KALDIRILDI
+  (19.08.2026); artik sol menudeki Tanimsiz Kartlar sayfasinda.
+  Burasi surekli acik duran bir izleme ekrani, o ise bakilinca
+  islem yapilip biten bir yapilacak-is listesi.
+#}
+
+<div class="bolum-basligi">
+  <h2>Son okutmalar</h2>
+  <a class="baglanti" href="{{ url_for('kayitlar') }}">Tüm kayıtlar →</a>
+</div>
+{#
+  Tablo KENDI icinde kayiyor, sayfa degil. Boylece durum kutulari ve
+  baslik her zaman ekranda kalir; yeni bir giris geldiginde sayfayi
+  yukari kaydirmak gerekmez.
+#}
+<div class="tablo-sarmal kayan-tablo">
+  <table>
+    <thead>
+      <tr>
+        <th>Zaman</th><th>Kişi</th><th>Yöntem</th>
+        <th>Kapı</th><th>Sonuç</th>
+      </tr>
+    </thead>
+    {#
+      Satir rengi sonucu tasiyor: acilanlar yesil, reddedilenler
+      kirmizi. Renk TEK BASINA birakilmadi, sonuc ayrica yaziyla da
+      yaziliyor - renk korlugunde ya da soluk bir ekranda iki satir
+      birbirinden ayirt edilemezdi.
+    #}
+    <tbody id="girisler-govde">
+      {% for k in girisler %}
+      <tr class="{{ 'gecti' if k.sonuc else 'redd' }}">
+        <td class="mono">{{ k.zaman.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+        <td>{{ k.ad_soyad }}</td>
+        <td>{{ k.yontem }}</td>
+        <td>{{ k.cihaz_adi or '-' }}</td>
+        <td>
+          {% if k.sonuc %}
+            <span class="rozet yesil">Açıldı</span>
+          {% else %}
+            <span class="rozet kirmizi">Reddedildi</span>
+          {% endif %}
+          {#
+            Yalnizca YEREL kararda isaret konur. Sunucu karari normal
+            hal; her satira yazilsaydi goz onu okumayi birakir ve
+            asil dikkat cekmesi gereken istisna gorunmez olurdu.
+          #}
+          {% if k.karar == 'yerel' %}
+            <span class="rozet gri"
+                  title="Kapı sunucuya ulaşamadı, kendi yerel listesinden karar verdi">yerel</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="bos">Henüz okutma yok.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+
+</div>{# /panel-ana #}
+
+<aside class="panel-yan" id="panel-yan">
+
+{#
+  DURUM KUTULARI - uc kutu, ucu de BASKA bir arizayi gosterir:
+    Sunucu -> elektrik kesintisi veya yeniden baslatma
+    Panel  -> Windows ayaktayken programin cokmesi
+    Kapı   -> ag veya Pi arizasi
+  Tek bir "sistem calisiyor" yazisi bu ucunu ayirt ettirmezdi.
+#}
+<div class="durum-serit">
+  <div class="durum-kutu">
+    <div class="durum-baslik">Sunucu</div>
+    <div class="durum-deger" data-sn="{{ durum.acik_saniye or 0 }}"
+         data-rol="sunucu">{{ durum.acik_saniye|surec }}</div>
+    <div class="durum-alt">
+      {% if durum.acilis %}
+        açılış {{ durum.acilis.strftime('%d.%m.%Y %H:%M') }}
+      {% else %}
+        açılış saati okunamadı
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="durum-kutu">
+    <div class="durum-baslik">Web paneli</div>
+    <div class="durum-deger" data-sn="{{ durum.panel_saniye or 0 }}"
+         data-rol="panel">{{ durum.panel_saniye|surec }}</div>
+    <div class="durum-alt">
+      {% if durum.onceki_kapanis %}
+        önceki kapanış {{ durum.onceki_kapanis.strftime('%d.%m %H:%M') }} ·
+        {{ durum.kapali_saniye|sure }} kapalı
+      {% else %}
+        ilk çalışma dilimi
+      {% endif %}
+    </div>
+  </div>
+
+  {% for c in durum.cihazlar %}
+  <div class="durum-kutu {% if c.durum == 'yerel' %}pasif-kutu
+       {%- elif not c.cevrimici %}kopuk{% endif %}">
+    {#
+      Kapali kapi AYRICA isaretleniyor. Sadece "Bagli" yazsaydi
+      sabah panele bakan biri kapinin calistigini sanardi; oysa kapi
+      ayakta ve baglidir ama KIMSEYI ALMIYOR. Ikisi ayni renkte
+      gorunse, kapali unutulmus bir kapi gunlerce fark edilmezdi.
+    #}
+    <div class="durum-baslik">
+      {{ c.cihaz_adi }}
+      {% if c.durum == 'yerel' %}
+        {# Kasitli kopariildi: KIRMIZI DEGIL. Kirmizi olsaydi kendi
+           kapattigimiz sey ariza gibi okunurdu. #}
+        <span class="rozet gri">Hizmet dışı</span>
+      {% else %}
+        {% if c.durum == 'kapali' %}
+          <span class="rozet sari">Kapalı</span>
+        {% endif %}
+        {% if c.cevrimici %}
+          <span class="rozet yesil">Bağlı</span>
+        {% else %}
+          <span class="rozet kirmizi">Kopuk</span>
+        {% endif %}
+      {% endif %}
+    </div>
+    {#
+      'yerel' kapida sayac CALISTIRILMAZ. Sayac "ne kadardir bagli"
+      demek; sunucudan koparilmis bir kapida bu sayinin karsiligi yok
+      ve ilerlemesi "her sey yolunda" izlenimi verirdi.
+    #}
+    {% if c.durum == 'yerel' %}
+    <div class="durum-deger sonuk">—</div>
+    <div class="durum-alt">
+      sunucu bağlantısı kesildi · kararını kendi listesinden veriyor
+      <br>son iletişim
+      {{ c.son_iletisim.strftime('%d.%m %H:%M') if c.son_iletisim else 'hiç' }}
+    </div>
+    {% else %}
+    <div class="durum-deger" data-sn="{{ c.beri or 0 }}"
+         data-rol="cihaz" data-cihaz="{{ c.id }}">{{ c.beri|surec }}</div>
+    <div class="durum-alt">
+      {% if c.cevrimici %}kesintisiz bağlı{% else %}kopuk{% endif %} ·
+      son iletişim
+      {{ c.son_iletisim.strftime('%d.%m %H:%M') if c.son_iletisim else 'hiç' }}
+      {% if c.gun_kesinti %}
+        <br>son 24 saat: {{ c.gun_kesinti }} kesinti,
+        toplam {{ c.gun_kesinti_sure|sure }}
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{# Sayaclar: durum kutularinin altinda, orantili olarak kucuk. #}
+<div class="ozet-serit">
+  <div class="mini-kart">
+    <div class="sayi">{{ ozet.personel }}</div>
+    <div class="etiket">Yetkili personel</div>
+    {% if ozet.pasif %}<div class="ek">{{ ozet.pasif }} kişi yetkisiz</div>{% endif %}
+  </div>
+  <div class="mini-kart">
+    <div class="sayi">{{ ozet.giris }}</div>
+    <div class="etiket">Bugün giren</div>
+  </div>
+  <div class="mini-kart {% if ozet.red %}uyari{% endif %}">
+    <div class="sayi">{{ ozet.red }}</div>
+    <div class="etiket">Bugün reddedilen</div>
+    {% if ozet.red %}
+    <div class="ek">
+      <a href="{{ url_for('kayitlar') }}?sonuc=0">listele →</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+</aside>
+
+</div>{# /panel-duzen #}
+
+{#
+  OTOMATIK TAZELEME
+  -----------------
+  Kapida biri gectiginde panelin kendiliginden guncellenmesi icin.
+
+  Neden <meta refresh> degil: o, sayfayi bastan yukler - kaydirma
+  konumu basa doner, aciksa bir metin secimi kaybolur ve ekran her
+  seferinde beyaza carpar. Burada sayfanin kendisi arka planda cekilip
+  YALNIZCA iki bolumun ici degistiriliyor: giris satirlari ve sag
+  sutun. Gerisi yerinde kalir.
+
+  Neden ayri bir JSON ucu yazilmadi: sunucu tarafinda tek satir bile
+  degismesin diye. Sayfanin HTML'i zaten uretiliyor; ayni sablonu
+  kullanmak, iki ayri yerde ayni bicimlendirmeyi tekrarlama ve
+  zamanla ayrisma riskini de ortadan kaldiriyor.
+
+  Oturum duserse gelen cevap giris sayfasidir; o durumda bolumler
+  bulunamaz ve sayfa bastan yuklenerek kullanici girise yonlendirilir.
+
+  Sekme arka plandayken tazeleme yapilmaz (belgenin gizli olmasi),
+  boylece acik unutulmus bir sekme sunucuyu bosuna mesgul etmez.
+#}
+<script>
+(function () {
+  // ---- Sayfa iki ayri hizda calisir ----
+  //
+  //  1) SAYAC (tarayicida, her saniye):
+  //     "21 sa 38 dk 12 sn" degerleri sunucuya hic sorulmadan
+  //     ilerler. Sunucudan istenselerdi saniyede bir istek sadece
+  //     sayacin akmasi icin harcanirdi.
+  //
+  //  2) YOKLAMA (sunucuya, her saniye):
+  //     /api/nabiz birkac yuz baytlik bir cevap doner - son gecis
+  //     kaydinin id'si ve guncel sureler. Liste ancak bu id
+  //     DEGISTIGINDE, yani gercekten yeni bir okutma oldugunda
+  //     bastan cekilir. Sayfanin tamamini her saniye cekmek, hicbir
+  //     sey olmadigi halde sablonu isletmek ve ~40 satirlik listeyi
+  //     yeniden yazmak demekti.
+  //
+  //     Ayrica sureler her turda sunucudaki gercek degerle
+  //     duzeltilir; tarayicinin sayaci sekme arka plandayken
+  //     yavasladigi icin (tarayicilar gizli sekmede zamanlayicilari
+  //     kisar) tek basina birakilsa zamanla geri kalirdi.
+
+  var ARALIK = {{ yenileme }} * 1000;
+  var BOLUMLER = ["#girisler-govde", "#panel-yan", "#zil-alan"];
+  var sonId = null;
+  var cekiliyor = false;
+
+  // Bu bicimin AYNISI app.py icinde sure_canli() olarak var. Ikisi
+  // ayrisirsa sayfa ilk acildiginda bir metin, bir saniye sonra
+  // baska bir metin gorunur.
+  function bicimle(sn) {
+    if (sn === null || sn === undefined || isNaN(sn)) { return "bilinmiyor"; }
+    sn = Math.max(0, Math.floor(sn));
+    var gun = Math.floor(sn / 86400);
+    var saat = Math.floor((sn % 86400) / 3600);
+    var dakika = Math.floor((sn % 3600) / 60);
+    var saniye = sn % 60;
+    if (gun) { return gun + " gün " + saat + " sa " + dakika + " dk"; }
+    if (saat) { return saat + " sa " + dakika + " dk " + saniye + " sn"; }
+    if (dakika) { return dakika + " dk " + saniye + " sn"; }
+    return saniye + " sn";
+  }
+
+  function sayaclariIlerlet() {
+    var kutular = document.querySelectorAll("[data-sn]");
+    for (var i = 0; i < kutular.length; i++) {
+      var sn = parseInt(kutular[i].getAttribute("data-sn"), 10);
+      if (isNaN(sn)) { continue; }
+      sn += 1;
+      kutular[i].setAttribute("data-sn", sn);
+      kutular[i].textContent = bicimle(sn);
+    }
+  }
+
+  function sayacAyarla(secici, deger) {
+    var el = document.querySelector(secici);
+    if (!el) { return; }
+    if (deger === null || deger === undefined) { return; }
+    el.setAttribute("data-sn", deger);
+    el.textContent = bicimle(deger);
+  }
+
+  // Tam tazeleme: sayfayi arka planda cekip YALNIZCA degisen
+  // bolumlerin icini degistirir. Bastan yuklemek (location.reload)
+  // kaydirma konumunu basa dondurur, metin secimini bozar ve ekran
+  // her seferinde beyaza carpar.
+  function tazele() {
+    if (cekiliyor) { return; }
+    cekiliyor = true;
+    fetch(window.location.pathname, { credentials: "same-origin" })
+      .then(function (c) {
+        if (!c.ok) { throw new Error("durum " + c.status); }
+        return c.text();
+      })
+      .then(function (html) {
+        var belge = new DOMParser().parseFromString(html, "text/html");
+        if (!belge.querySelector("#girisler-govde")) {
+          window.location.reload();   // oturum dusmus
+          return;
+        }
+        BOLUMLER.forEach(function (sec) {
+          // Zil listesi ACIKKEN tazelenmez: okunmaya calisilan liste
+          // titrer ve kaydirma konumu basa donerdi.
+          if (sec === "#zil-alan" &&
+              document.body.classList.contains("zil-acik")) { return; }
+          var yeni = belge.querySelector(sec);
+          var eski = document.querySelector(sec);
+          if (yeni && eski && yeni.innerHTML !== eski.innerHTML) {
+            eski.innerHTML = yeni.innerHTML;
+          }
+        });
+      })
+      .catch(function () {
+        // Ag kesintisi ya da panel yeniden basliyor olabilir. Sessiz
+        // gecilir; bir sonraki tur zaten denenecek. Ekrana hata
+        // basmak surekli acik duran bir izleme sayfasinda gurultu
+        // olurdu.
+      })
+      .finally(function () { cekiliyor = false; });
+  }
+
+  var sonImza = null;
+  var surum = null;
+
+  function yokla() {
+    if (document.hidden) { return; }
+    fetch("/api/nabiz", { credentials: "same-origin" })
+      .then(function (c) {
+        if (!c.ok) { throw new Error("durum " + c.status); }
+        return c.json();
+      })
+      .then(function (v) {
+        // Panel yeniden baslatildi (guncelleme ya da cokme): bu
+        // sekmedeki JavaScript artik eski olabilir. Bir kez yeniden
+        // yuklenir. Aksi halde acik unutulmus bir sekme gunlerce
+        // eski mantikla calisir ve neden "duzelmedigi" anlasilmaz.
+        if (surum === null) {
+          surum = v.surum;
+        } else if (v.surum && v.surum !== surum) {
+          window.location.reload();
+          return;
+        }
+        sayacAyarla('[data-rol="sunucu"]', v.sunucu_sn);
+        sayacAyarla('[data-rol="panel"]', v.panel_sn);
+        Object.keys(v.cihazlar || {}).forEach(function (id) {
+          sayacAyarla('[data-rol="cihaz"][data-cihaz="' + id + '"]',
+                      v.cihazlar[id].sn);
+        });
+        // Iki ayri tetikleyici:
+        //   son_id -> kapidan biri gecti, liste degisti
+        //   imza   -> bir kapinin baglantisi koptu/dondu
+        //
+        // Ikincisi olmadan, kablosu cekilen bir kapi ancak birileri
+        // kapidan gecmeye calisinca kirmiziya donerdi - yani tam da
+        // kimsenin gecemedigi durumda haber vermezdi.
+        //
+        // Ilk turda sadece baslangic degerleri alinir; o anda sayfa
+        // zaten guncel oldugu icin tazeleme yapilmaz.
+        var degisti = (sonId !== null && v.son_id !== sonId) ||
+                      (sonImza !== null && v.imza !== sonImza);
+        if (degisti) { tazele(); }
+        sonId = v.son_id;
+        sonImza = v.imza;
+      })
+      .catch(function () { /* sessiz */ });
+  }
+
+  setInterval(sayaclariIlerlet, 1000);
+  setInterval(yokla, ARALIK);
+  yokla();
+
+  // Sekmeye geri donuldugunde beklemeden guncelle: arka planda
+  // zamanlayicilar kisildigi icin sayac geri kalmis olabilir.
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) { yokla(); tazele(); }
+  });
+
+})();
+</script>
+{% endblock %}

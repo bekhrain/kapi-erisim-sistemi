@@ -1,0 +1,671 @@
+/* Kapi Erisim Sistemi - web yonetim arayuzu
+   Sade, hizli, dis bagimliligi olmayan tek CSS dosyasi.
+   Sunucu internete acik olmadigi icin CDN kullanilamaz. */
+
+:root {
+  --zemin: #f4f6f8;
+  --kart: #ffffff;
+  --cizgi: #dde3ea;
+  --metin: #1c2733;
+  --soluk: #6b7a8c;
+  --vurgu: #0f6ea8;
+  --vurgu-koyu: #0b587f;
+  --yesil: #157347;
+  --yesil-zemin: #e3f4ea;
+  --kirmizi: #b02a37;
+  --kirmizi-zemin: #fbe6e8;
+  --sari: #8a6100;
+  --sari-zemin: #fdf3dd;
+
+  /* Sol menu koyu; icerik alani acik. Iki alan boylece bakisla
+     ayrilir, ayrica menudeki aktif satir kontrastla one cikar. */
+  --yan-zemin: #12232f;
+  --yan-metin: #b8c7d4;
+  --yan-aktif: #1a2f3d;
+  --yan-genislik: 216px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 15px;
+  background: var(--zemin);
+  color: var(--metin);
+}
+
+/* ---- Sol menu ---- */
+/* Oturum acikken govde iki sutun: sabit menu + akan icerik.
+   Menu 'fixed' degil 'sticky': uzun tablolarda menu ekranda kalir ama
+   kisa sayfalarda alt bilgiyi yukari itmez. */
+body.oturumlu { display: flex; align-items: flex-start; min-height: 100vh; }
+
+.yan {
+  width: var(--yan-genislik);
+  flex: 0 0 var(--yan-genislik);
+  /* 'stretch' DEGIL: stretch, menuyu icerik boyuna kadar uzatiyordu
+     ve kendi ust ogesinden uzun bir sticky oge yapismaz - sayfa
+     kaydirilinca menu de yukari kayiyordu. flex-start + tam ekran
+     yuksekligi ile menu ekranda sabit kalir. */
+  align-self: flex-start;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  /* Menu ekrandan uzun olursa (cok sayfa eklenirse) kendi icinde
+     kaysin, sayfayi uzatmasin. */
+  overflow-y: auto;
+  background: var(--yan-zemin);
+  color: var(--yan-metin);
+  display: flex;
+  flex-direction: column;
+}
+
+.marka { padding: 20px 20px 18px; border-bottom: 1px solid #1e3444; }
+.marka-ad {
+  display: block; color: #fff; font-size: 17px; font-weight: 600;
+  letter-spacing: -.01em;
+}
+.marka-alt {
+  display: block; font-size: 12px; color: #7f95a6; margin-top: 2px;
+}
+
+.yan nav { display: flex; flex-direction: column; padding: 12px 0; gap: 1px; }
+.yan nav a {
+  color: var(--yan-metin);
+  text-decoration: none;
+  padding: 11px 20px;
+  font-size: 14.5px;
+  border-left: 3px solid transparent;
+}
+.yan nav a:hover { background: #1a2f3d; color: #fff; }
+.yan nav a.aktif {
+  background: #1a2f3d;
+  color: #fff;
+  border-left-color: #43a3d0;
+  font-weight: 600;
+}
+
+.yan-alt { margin-top: auto; padding: 16px 20px 20px; }
+.yan-alt .cikis {
+  color: #8fa4b4; text-decoration: none; font-size: 13.5px;
+}
+.yan-alt .cikis:hover { color: #fff; text-decoration: underline; }
+
+/* Icerik sutunu. min-width:0 sart: flex ogesi varsayilan olarak
+   icerigi kadar genis olmak ister ve genis bir tablo tum sayfayi
+   yatay kaydirir. */
+.sarmal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.govde { width: 100%; max-width: 1180px; padding: 28px 30px 56px; flex: 1; }
+
+.alt {
+  color: var(--soluk);
+  font-size: 12px;
+  padding: 16px 30px;
+  border-top: 1px solid var(--cizgi);
+}
+
+/* Dar ekranda menu ustte yatay serit olur. */
+@media (max-width: 820px) {
+  body.oturumlu { display: block; }
+  .yan {
+    width: auto; flex: none; min-height: 0; position: static;
+    flex-direction: column;
+  }
+  .marka { padding: 14px 18px; }
+  .yan nav { flex-direction: row; flex-wrap: wrap; padding: 0 10px 10px; }
+  .yan nav a { padding: 9px 12px; border-left: none; border-bottom: 3px solid transparent; }
+  .yan nav a.aktif { border-left: none; border-bottom-color: #43a3d0; }
+  .yan-alt { margin: 0; padding: 0 18px 14px; }
+  .govde { padding: 20px 18px 40px; }
+  .alt { padding: 14px 18px; }
+}
+
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 30px 0 12px; }
+h1 + .sayfa-alt { color: var(--soluk); font-size: 13.5px; margin: 0 0 20px; }
+
+.baslik-satiri {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.bolum-basligi {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin: 30px 0 12px;
+}
+.bolum-basligi h2 { margin: 0; }
+
+.alt-yazi { color: var(--soluk); font-size: 13px; }
+
+/* ---- Bildirimler ---- */
+.bildirim {
+  padding: 12px 16px; border-radius: 6px; margin-bottom: 16px;
+  border-left: 4px solid;
+}
+.bildirim.basari { background: var(--yesil-zemin); border-color: var(--yesil); }
+.bildirim.hata   { background: var(--kirmizi-zemin); border-color: var(--kirmizi); }
+.bildirim.uyari  { background: var(--sari-zemin); border-color: var(--sari); }
+
+/* ---- Ozet kartlari ---- */
+.kart-izgara {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+}
+.kart {
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 8px; padding: 16px 18px;
+}
+.kart.uyari { border-color: var(--kirmizi); }
+.kart .sayi {
+  font-size: 28px; font-weight: 600; line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kart .etiket { color: var(--soluk); font-size: 12.5px; margin-top: 5px; }
+.kart .ek { color: var(--soluk); font-size: 11.5px; margin-top: 3px; }
+.kart.uyari .sayi { color: var(--kirmizi); }
+
+/* ---- Tablolar ---- */
+.tablo-sarmal { overflow-x: auto; margin-bottom: 8px; }
+table {
+  width: 100%; border-collapse: collapse; background: var(--kart);
+  border: 1px solid var(--cizgi); border-radius: 8px; overflow: hidden;
+  margin-bottom: 8px;
+}
+th, td { padding: 10px 12px; text-align: left; font-size: 14px; }
+th {
+  background: #eef2f6; font-weight: 600; font-size: 13px;
+  border-bottom: 1px solid var(--cizgi); white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid #eef1f4; }
+tbody tr:last-child { border-bottom: none; }
+tr.pasif { opacity: .55; }
+td.bos { text-align: center; color: var(--soluk); padding: 24px; }
+.mono {
+  font-family: Consolas, monospace; font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.detay { color: var(--soluk); font-size: 13px; }
+.sayisal { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- Rozetler ---- */
+.rozet {
+  display: inline-block; padding: 3px 9px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.rozet.yesil  { background: var(--yesil-zemin);  color: var(--yesil); }
+.rozet.kirmizi{ background: var(--kirmizi-zemin);color: var(--kirmizi); }
+.rozet.sari   { background: var(--sari-zemin);   color: var(--sari); }
+.rozet.gri    { background: #eef2f6; color: var(--soluk); }
+
+/* ---- Dugmeler ve baglantilar ---- */
+button, .dugme {
+  background: var(--vurgu); color: #fff; border: none;
+  padding: 9px 16px; border-radius: 6px; cursor: pointer;
+  font-size: 14px; text-decoration: none; display: inline-block;
+}
+button:hover, .dugme:hover { background: var(--vurgu-koyu); }
+button.ince, .dugme.ince { padding: 5px 10px; font-size: 13px; }
+button.tehlike { background: var(--kirmizi); }
+button.sade, .dugme.sade {
+  background: transparent; color: var(--vurgu);
+  border: 1px solid var(--cizgi);
+}
+button.sade:hover, .dugme.sade:hover { background: #eef4f8; color: var(--vurgu-koyu); }
+.baglanti { color: var(--vurgu); text-decoration: none; font-size: 13px; }
+.baglanti:hover { text-decoration: underline; }
+
+:focus-visible { outline: 2px solid var(--vurgu); outline-offset: 2px; }
+
+.islemler { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.islemler form { margin: 0; }
+
+/* ---- Formlar ---- */
+.form { max-width: 480px; background: var(--kart); padding: 22px;
+        border: 1px solid var(--cizgi); border-radius: 8px; }
+.form label { display: block; margin-top: 14px; font-size: 13px; font-weight: 600; }
+.form input {
+  width: 100%; padding: 9px 11px; margin-top: 5px;
+  border: 1px solid var(--cizgi); border-radius: 6px; font-size: 15px;
+}
+.form small { display: block; color: var(--soluk); font-size: 12px; margin-top: 5px; }
+.form-dugmeler { margin-top: 22px; display: flex; gap: 14px; align-items: center; }
+
+.arama { display: flex; gap: 8px; align-items: center; margin: 14px 0 18px; }
+.arama input { flex: 1; max-width: 340px; padding: 8px 11px;
+               border: 1px solid var(--cizgi); border-radius: 6px; }
+
+.filtre {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end;
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 8px; padding: 16px; margin-bottom: 16px;
+}
+.filtre label { display: block; font-size: 12px; color: var(--soluk); margin-bottom: 4px; }
+.filtre select, .filtre input {
+  padding: 8px 10px; border: 1px solid var(--cizgi); border-radius: 6px;
+  font-size: 14px;
+}
+.filtre-dugme { display: flex; gap: 12px; align-items: center; }
+
+/* ---- Giris sayfasi ---- */
+.giris-kutu {
+  max-width: 360px; margin: 60px auto; background: var(--kart);
+  border: 1px solid var(--cizgi); border-radius: 8px; padding: 32px;
+  text-align: center;
+}
+.giris-kutu h1 { font-size: 20px; margin-bottom: 4px; }
+.giris-kutu form { margin-top: 22px; text-align: left; }
+.giris-kutu label { font-size: 13px; font-weight: 600; }
+.giris-kutu input {
+  width: 100%; padding: 10px 12px; margin: 6px 0 18px;
+  border: 1px solid var(--cizgi); border-radius: 6px; font-size: 15px;
+}
+.giris-kutu button { width: 100%; padding: 11px; }
+
+/* ---- Basit sutun grafigi (JS'siz, sadece CSS) ---- */
+.grafik {
+  display: flex; align-items: flex-end; gap: 4px; height: 160px;
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 8px; padding: 14px;
+}
+.sutun-sarmal { flex: 1; display: flex; flex-direction: column;
+                justify-content: flex-end; height: 100%; }
+.sutun { background: var(--vurgu); border-radius: 3px 3px 0 0; min-height: 2px; }
+.sutun-etiket { text-align: center; font-size: 11px; color: var(--soluk);
+                margin-top: 4px; }
+
+/* ---- Durum seridi (Genel Durum sayfasinin en ustu) ----
+   Sayfa acilir acilmaz okunan satir bu oldugu icin sayac kartlarindan
+   AYRI bir gorunum verildi: sol kenarda renkli serit, kopuk olanda
+   kirmizi. Sayaclarla ayni gorunse "bugun 3 giris" ile "kapi 4 saattir
+   kopuk" ayni onemdeymis gibi okunurdu.
+
+   Not: 19.08.2026'da kaldirilan yedi gunluk sutun grafiginin (.hafta,
+   .gosterge) stilleri de bu satirlarin yerindeydi; panel sadelestirilince
+   silindiler. Ayni isi Raporlar sayfasindaki tablolar goruyor. */
+.durum-serit {
+  display: grid; gap: 12px; margin-bottom: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+.durum-kutu {
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-left: 4px solid var(--yesil);
+  border-radius: 8px; padding: 13px 15px;
+}
+.durum-kutu.kopuk { border-left-color: var(--kirmizi); background: var(--kirmizi-zemin); }
+.durum-baslik {
+  font-size: 12.5px; color: var(--soluk); font-weight: 600;
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.durum-deger {
+  font-size: 20px; font-weight: 600; margin: 4px 0 3px;
+  font-variant-numeric: tabular-nums;
+}
+.durum-kutu.pasif-kutu { border-left-color: var(--soluk); opacity: .75; }
+.durum-deger.sonuk { color: var(--soluk); }
+.durum-alt { font-size: 12px; color: var(--soluk); line-height: 1.5; }
+
+.kirmizi-metin { color: var(--kirmizi); }
+
+/* ---- Rol seridi ve rozetleri ----
+   Uc rol UC AYRI RENK tasiyor ama renk tek basina birakilmadi: rozetin
+   icinde adi da yaziyor. Renk korlugunde ya da yansimali bir ekranda
+   "Ogrenci" ile "Misafir" ayirt edilemezdi - ve bu ikisinin yetkisi
+   farkli. */
+.rol-serit { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+.rol-dugme {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 20px; padding: 6px 14px; font-size: 13px;
+  color: var(--metin); text-decoration: none;
+}
+.rol-dugme:hover { border-color: var(--vurgu); }
+.rol-dugme.secili {
+  background: var(--vurgu); border-color: var(--vurgu); color: #fff;
+}
+.rol-dugme .adet {
+  font-size: 11.5px; font-weight: 600; color: var(--soluk);
+  background: #eef2f6; border-radius: 10px; padding: 1px 7px;
+}
+.rol-dugme.secili .adet { background: rgba(255, 255, 255, .25); color: #fff; }
+
+.rol-kutulari { display: flex; flex-direction: column; gap: 3px; }
+.rol-kutulari label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--metin); white-space: nowrap;
+}
+.rol-kutulari input { margin: 0; }
+
+.rol-rozet {
+  display: inline-block; font-size: 11.5px; font-weight: 600;
+  border-radius: 4px; padding: 2px 8px; white-space: nowrap;
+}
+.rol-rozet.personel { background: #e8eef6; color: #35506e; }
+.rol-rozet.ogrenci  { background: #e6f2ea; color: #2c6b45; }
+.rol-rozet.misafir  { background: #fdf0e0; color: #8a5a17; }
+
+/* ---- Personel fotografi ---- */
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  object-fit: cover; display: block; background: #e3e9ef;
+}
+.bos-avatar {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--soluk); font-weight: 600; font-size: 15px;
+}
+.foto-onizleme {
+  display: flex; align-items: center; gap: 12px; margin-top: 6px;
+}
+.foto-onizleme img {
+  width: 72px; height: 72px; border-radius: 6px; object-fit: cover;
+  border: 1px solid var(--cizgi);
+}
+.form input[type=file] {
+  padding: 7px; background: #fbfcfd;
+}
+
+/* ---- Kart havuzu (kapida okutulmus sahipsiz kartlar) ---- */
+.kart-havuzu {
+  margin-top: 8px; border: 1px solid var(--cizgi); border-radius: 6px;
+  background: #fbfcfd; padding: 10px 12px;
+}
+.kart-havuzu-baslik {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 12px; color: var(--soluk); margin-bottom: 8px;
+}
+.canli { color: var(--yesil); font-size: 11px; }
+.kart-secenek {
+  display: flex; justify-content: space-between; align-items: center;
+  width: 100%; gap: 12px; margin-bottom: 6px; text-align: left;
+  background: #fff; color: var(--metin);
+  border: 1px solid var(--cizgi); padding: 8px 11px;
+}
+.kart-secenek:hover { background: #eef4f8; border-color: var(--vurgu); }
+.kart-secenek.secili { background: var(--yesil-zemin); border-color: var(--yesil); }
+.kart-secenek .alt-yazi { font-size: 11px; }
+.bos-kart { margin: 4px 0; font-size: 12px; }
+
+/* Panelde bekleyen kart seridi: her satir dogrudan kayit formuna gider. */
+.bekleyen-liste { display: grid; gap: 8px; }
+.bekleyen-satir {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; background: var(--kart); border: 1px solid var(--cizgi);
+  border-left: 3px solid var(--sari);
+  border-radius: 6px; padding: 10px 14px; text-decoration: none;
+  color: var(--metin);
+}
+.bekleyen-satir:hover { border-color: var(--vurgu); border-left-color: var(--vurgu); background: #f7fbfd; }
+.bekleyen-satir .uid { font-family: Consolas, monospace; font-weight: 600; }
+.bekleyen-satir .ne-zaman { color: var(--soluk); font-size: 12.5px; }
+
+/* ---- Aciklama notlari ---- */
+.not {
+  background: #eef4f8; border-left: 3px solid var(--vurgu);
+  padding: 12px 14px; font-size: 13px; color: #33475b;
+  border-radius: 0 6px 6px 0; margin: 14px 0 26px;
+}
+.not.dikkat { background: var(--sari-zemin); border-left-color: var(--sari); color: #5b4708; }
+
+/* ---- Cihaz sayfasi ---- */
+.kimlik { font-size: 16px; font-weight: 600; }
+.satir-alan {
+  width: 100%; min-width: 120px; padding: 6px 9px;
+  border: 1px solid var(--cizgi); border-radius: 5px; font-size: 14px;
+  background: #fff;
+}
+.satir-alan:focus { border-color: var(--vurgu); outline: none; }
+
+/* Kayitlar sayfasindaki ozet serit: filtre ile tablo arasinda durur,
+   kartlardan biraz daha dar olsun ki ana panelle karismasin. */
+
+
+/* =====================================================================
+   GENEL DURUM - iki sutunlu duzen (19.08.2026)
+   ---------------------------------------------------------------------
+   Ana alan tek ise ayrildi: kim girdi. Olcumler ve sayaclar saga, dar
+   bir sutuna cekildi. Amac, buyuk ekranda sayfayi HIC kaydirmadan
+   her seyi gorebilmek.
+   ===================================================================== */
+
+/* Genel govde 1180px ile sinirli; okunabilir satir uzunlugu icin dogru
+   bir sinir ama iki sutunlu bu sayfada sagda genis bir bosluk
+   birakiyordu. Sadece bu sayfada geniyor. */
+body.panel-sayfa .govde { max-width: 1560px; }
+
+.panel-duzen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
+  align-items: start;
+}
+.panel-ana { min-width: 0; }
+
+/* Sag sutun kayan tabloya ragmen ekranda kalsin. */
+.panel-yan { position: sticky; top: 18px; }
+
+/* Durum kutulari sag sutunda ALT ALTA; genis serit degil. */
+.panel-yan .durum-serit {
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+/* ---- Sayaclar: durum kutularinin altinda, orantili kucuk ----
+   Uc kutu yan yana 300px'e sigar. Sayi 19px: durum kutularindaki
+   20px'lik olcumlerden kucuk kalmali, cunku bunlar ikincil bilgi. */
+.ozet-serit {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.mini-kart {
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 8px; padding: 9px 10px; text-align: center;
+}
+.mini-kart.uyari { border-color: var(--kirmizi); background: var(--kirmizi-zemin); }
+.mini-kart .sayi {
+  font-size: 19px; font-weight: 600; line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.mini-kart .etiket { font-size: 10.5px; color: var(--soluk); line-height: 1.3; }
+.mini-kart .ek { font-size: 10.5px; margin-top: 3px; }
+.mini-kart .ek a { color: var(--vurgu); }
+
+/* ---- Kendi icinde kayan giris tablosu ----
+   Sayfanin tamami degil, YALNIZCA liste kayar. Boylece durum kutulari
+   ve baslik her zaman gorunur kalir. Basliklar (thead) da yapiskan;
+   uzun listede hangi sutuna baktigini kaybetmemek icin. */
+.kayan-tablo {
+  max-height: calc(100vh - 250px);
+  min-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  background: var(--kart);
+}
+.kayan-tablo table { border: 0; border-radius: 0; margin-bottom: 0; }
+.kayan-tablo thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--zemin);
+  box-shadow: inset 0 -1px 0 var(--cizgi);
+}
+
+/* Dar ekranda iki sutun tek sutuna duser: olcumler yine ustte olur.
+   1100px siniri, 300px'lik sag sutun + okunabilir bir tablo icin
+   gereken en az genisliktir. */
+@media (max-width: 1100px) {
+  .panel-duzen { grid-template-columns: 1fr; }
+  .panel-yan { position: static; order: -1; }
+  .panel-yan .durum-serit {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+  .kayan-tablo { max-height: none; overflow-y: visible; }
+}
+
+/* ---------------------------------------------------------------------
+   BILDIRIM ZILI (19.08.2026)
+   Sol menude bir satir; liste menunun YANINA acilir. Menu 216 piksel
+   genisliginde ve olay metinleri oraya sigmaz - icine sigdirilsaydi
+   her satir dorde bolunur, okunmazdi.
+   --------------------------------------------------------------------- */
+.zil-alan { position: relative; padding: 0 0 6px; }
+
+/* Menudeki diger satirlarla ayni govde: ayni yukseklik, ayni sol
+   serit payi. Zil bir "sayfa" degil ama menude yabanci durmasin. */
+.zil-dugme {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 11px 20px;
+  background: none; border: 0; border-left: 3px solid transparent;
+  cursor: pointer; font: inherit; font-size: 14.5px;
+  color: var(--yan-metin); text-align: left;
+}
+.zil-dugme:hover { background: #1a2f3d; color: #fff; }
+body.zil-acik .zil-dugme {
+  background: #1a2f3d; color: #fff; border-left-color: #43a3d0;
+}
+/* Okunmamis olay varsa satir kendini belli etsin. */
+.zil-dugme.dolu { color: #f0c46a; }
+.zil-ikon { position: relative; display: flex; }
+.zil-yazi { flex: 1; }
+
+.zil-rozet {
+  position: absolute; top: -5px; right: -7px;
+  min-width: 15px; height: 15px; padding: 0 3px;
+  background: #d64550; color: #fff;
+  border-radius: 8px; font-size: 10px; font-weight: 700;
+  line-height: 15px; text-align: center;
+}
+
+/* ---- Acilir liste ----
+   'fixed': menu sticky oldugu icin sayfa kaydirilinca liste de
+   kaymasin. Sol kenari menunun genisligine oturur, boylece menuye
+   bitisik acilir. */
+.zil-panel {
+  display: none;
+  position: fixed;
+  left: var(--yan-genislik);
+  bottom: 16px;
+  width: 340px;
+  max-height: 60vh;
+  z-index: 60;
+  background: var(--kart);
+  color: var(--metin);
+  border: 1px solid var(--cizgi);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(12, 30, 45, .22);
+  overflow: hidden;
+}
+body.zil-acik .zil-panel { display: flex; flex-direction: column; }
+
+.zil-basi {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-bottom: 1px solid var(--cizgi);
+  font-size: 13px; font-weight: 600;
+}
+.zil-kapat {
+  background: none; border: 0; cursor: pointer;
+  font-size: 19px; line-height: 1; color: var(--soluk); padding: 0 2px;
+}
+.zil-kapat:hover { color: var(--metin); }
+
+.zil-liste { overflow-y: auto; }
+
+.zil-olay {
+  padding: 9px 12px; border-bottom: 1px solid var(--cizgi);
+  border-left: 3px solid transparent; font-size: 12px;
+}
+.zil-olay:last-child { border-bottom: 0; }
+.zil-olay.yeni { background: var(--sari-zemin); }
+/* Olay turu soldaki renk seridinden okunur: kopuk kirmizi, geri
+   donus yesil, sunucu duruslari sari. */
+.zil-olay.kopuk  { border-left-color: var(--kirmizi); }
+.zil-olay.dondu  { border-left-color: var(--yesil); }
+.zil-olay.sunucu { border-left-color: var(--sari); }
+
+.olay-ust { display: flex; justify-content: space-between; gap: 8px; }
+.olay-baslik { font-weight: 600; }
+.olay-zaman { color: var(--soluk); font-size: 11px; white-space: nowrap; }
+.olay-metin { color: var(--soluk); margin-top: 2px; line-height: 1.45; }
+/* Cevrimdisi gecis sayisi - bildirimin asil tasidigi bilgi. */
+.olay-sayim {
+  margin-top: 5px; padding-top: 5px;
+  border-top: 1px dashed var(--cizgi); line-height: 1.45;
+}
+.zil-bos { padding: 12px; color: var(--soluk); font-size: 12px; }
+
+/* Dar ekranda menunun yanina sigmaz; ortada acilir. */
+@media (max-width: 720px) {
+  .zil-panel { left: 12px; right: 12px; width: auto; }
+}
+
+/* ---- Genel Durum listesi: sonuca gore satir rengi (19.08.2026) ----
+   Liste artik SADECE acilan kapilari degil butun okutmalari
+   gosteriyor. Ikisi ayni gorunseydi liste okunmaz olurdu; sol
+   kenardaki serit ve hafif zemin, satirin sonucunu bir bakista
+   veriyor. Sonuc ayrica "Sonuç" sutununda YAZIYLA da duruyor -
+   rengi tek isaret yapmak, renk korlugunde bilgiyi tamamen
+   kaybettirirdi. */
+#girisler-govde tr.gecti td:first-child { border-left: 3px solid var(--yesil); }
+#girisler-govde tr.redd  td:first-child { border-left: 3px solid var(--kirmizi); }
+#girisler-govde tr.redd { background: var(--kirmizi-zemin); }
+#girisler-govde tr.gecti { background: var(--yesil-zemin); }
+
+
+/* ---- Menu sayi rozeti (19.08.2026) ---- */
+.yan nav a { display: flex; align-items: center; gap: 8px; }
+.menu-rozet {
+  min-width: 18px; padding: 0 5px;
+  background: #d64550; color: #fff;
+  border-radius: 9px; font-size: 11px; font-weight: 700;
+  line-height: 18px; text-align: center;
+}
+
+/* ---- Bos durum kutusu ---- */
+.bos-durum {
+  background: var(--kart); border: 1px dashed var(--cizgi);
+  border-radius: 8px; padding: 28px; text-align: center;
+  color: var(--soluk);
+}
+.bos-durum .bos-alt { font-size: 12.5px; margin-top: 5px; }
+
+/* ---------------------------------------------------------------------
+   RAPORLAR - izgara duzeni (19.08.2026)
+   Alti bolum alt alta uc ekran boyu tutuyordu. Iki sutuna alindi ve
+   her tablo KENDI icinde kaydiriliyor; boylece hangi raporun nerede
+   oldugu sabit kalir, aranan sey kaydirilarak degil bakilarak bulunur.
+   --------------------------------------------------------------------- */
+body.rapor-sayfa .govde { max-width: 1560px; }
+
+.rapor-izgara {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.rapor-kart {
+  background: var(--kart); border: 1px solid var(--cizgi);
+  border-radius: 8px; padding: 14px 16px; min-width: 0;
+}
+/* Sutun grafigi dar bir kutuda okunmaz: tam genislik. */
+.rapor-kart.genis { grid-column: 1 / -1; }
+.rapor-kart h2 { margin: 0 0 10px; font-size: 15px; }
+
+.rapor-tablo { max-height: 260px; overflow-y: auto; margin-bottom: 0; }
+.rapor-tablo table { border: 0; border-radius: 0; margin-bottom: 0; }
+/* Uzun listede hangi sutuna bakildigi kaybolmasin. */
+.rapor-tablo thead th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--zemin);
+  box-shadow: inset 0 -1px 0 var(--cizgi);
+}
+
+@media (max-width: 1100px) {
+  .rapor-izgara { grid-template-columns: 1fr; }
+  .rapor-tablo { max-height: none; overflow-y: visible; }
+}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block baslik %}Raporlar{% endblock %}
+{% block sayfa_sinifi %}rapor-sayfa{% endblock %}
+
+{% block icerik %}
+<h1>Raporlar</h1>
+
+{#
+  SADELESTIRILDI (19.08.2026).
+
+  Onceki surumde her tablonun altinda bir aciklama paragrafi vardi:
+  damganin ne oldugu, olcumun sinirlari, basarisizlik oraninin nasil
+  okunacagi. Metinler dogruydu ama sayfayi uc ekran boyuna cikariyor
+  ve her acilista bastan okunuyordu - oysa bu bir BASVURU sayfasi,
+  ders notu degil. Aciklamalar kaldirildi; olculerin nasil tutuldugu
+  koddaki yorumlarda ve sunucu/006-calisma-suresi.sql icinde duruyor.
+
+  Bolumler iki sutunlu bir izgaraya alindi ve her tablo kendi icinde
+  kaydiriliyor: sayfanin tamami degil. Boylece hangi raporun nerede
+  oldugu sabit kalir, aranan sey kaydirilarak degil bakilarak bulunur.
+#}
+<div class="rapor-izgara">
+
+  {# Grafik tam genislikte: sutunlar dar bir kutuda okunmaz. #}
+  <section class="rapor-kart genis">
+    <h2>Saatlik Yoğunluk</h2>
+    <div class="grafik">
+      {% for s in saatlik %}
+      <div class="sutun-sarmal" title="{{ s.saat }}:00 - {{ s.adet }} geçiş">
+        <div class="sutun" style="height: {{ (s.adet * 100 / en_yuksek)|round(0)|int }}%"></div>
+        <div class="sutun-etiket">{{ s.saat }}</div>
+      </div>
+      {% else %}
+      <p class="bos">Veri yok.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rapor-kart">
+    <h2>Sunucu Çalışma Geçmişi</h2>
+    <div class="tablo-sarmal rapor-tablo">
+      <table>
+        <thead>
+          <tr><th>Başlangıç</th><th>Son damga</th><th>Süre</th>
+              <th>Öncesinde kapalı</th><th>Ne oldu</th></tr>
+        </thead>
+        <tbody>
+          {% for o in oturumlar %}
+          <tr>
+            <td class="mono">{{ o.baslangic.strftime('%d.%m %H:%M') }}</td>
+            <td class="mono">
+              {% if o.acik %}
+                <span class="rozet yesil">çalışıyor</span>
+              {% else %}
+                {{ o.son_nabiz.strftime('%d.%m %H:%M') }}
+              {% endif %}
+            </td>
+            <td>{{ o.sure|sure }}</td>
+            <td>
+              {% if o.kapali_saniye is none %}
+                <span class="detay">ilk kayıt</span>
+              {% elif o.kapali_saniye > 300 %}
+                <strong class="kirmizi-metin">{{ o.kapali_saniye|sure }}</strong>
+              {% else %}
+                {{ o.kapali_saniye|sure }}
+              {% endif %}
+            </td>
+            <td>
+              {% if o.tur == 'makine' %}
+                <span class="rozet kirmizi">Sunucu yeniden başladı</span>
+              {% elif o.tur == 'panel' %}
+                <span class="rozet sari">Panel yeniden başladı</span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="bos">Henüz damga yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rapor-kart">
+    <h2>Kapı Bağlantı Kesintileri</h2>
+    <div class="tablo-sarmal rapor-tablo">
+      <table>
+        <thead>
+          <tr><th>Kapı</th><th>Kopma</th><th>Dönüş</th><th>Süre</th></tr>
+        </thead>
+        <tbody>
+          {% for k in kesintiler %}
+          <tr>
+            <td>{{ k.cihaz_adi }}</td>
+            <td class="mono">{{ k.baslangic.strftime('%d.%m %H:%M') }}</td>
+            <td class="mono">
+              {% if k.bitis %}
+                {{ k.bitis.strftime('%d.%m %H:%M') }}
+              {% else %}
+                <span class="rozet kirmizi">hâlâ kopuk</span>
+              {% endif %}
+            </td>
+            <td>{{ k.sure|sure }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="bos">Kayıtlı kesinti yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rapor-kart">
+    <h2>Yöntem Dağılımı</h2>
+    <div class="tablo-sarmal rapor-tablo">
+      <table>
+        <thead>
+          <tr><th>Yöntem</th><th>Toplam</th><th>Başarısız</th><th>Oran</th></tr>
+        </thead>
+        <tbody>
+          {% for y in yontem_dagilimi %}
+          <tr>
+            <td>{{ y.yontem }}</td>
+            <td>{{ y.adet }}</td>
+            <td>{{ y.basarisiz or 0 }}</td>
+            <td>%{{ ((y.basarisiz or 0) * 100 / y.adet)|round(1) }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="bos">Veri yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rapor-kart">
+    <h2>Son 14 Gün</h2>
+    <div class="tablo-sarmal rapor-tablo">
+      <table>
+        <thead><tr><th>Gün</th><th>Toplam</th><th>Başarılı</th></tr></thead>
+        <tbody>
+          {% for g in gunluk %}
+          <tr>
+            <td>{{ g.gun.strftime('%d.%m.%Y') }}</td>
+            <td>{{ g.adet }}</td>
+            <td>{{ g.basarili or 0 }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="bos">Veri yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="rapor-kart">
+    <h2>En Sık Geçiş Yapanlar</h2>
+    <div class="tablo-sarmal rapor-tablo">
+      <table>
+        <thead><tr><th>Kişi</th><th>Geçiş sayısı</th></tr></thead>
+        <tbody>
+          {% for k in en_cok %}
+          <tr><td>{{ k.ad_soyad }}</td><td>{{ k.adet }}</td></tr>
+          {% else %}
+          <tr><td colspan="2" class="bos">Veri yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
