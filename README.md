@@ -28,9 +28,21 @@ Pi (client)  <--- MySQL --->  Sunucu (ana veritabanı)  <--- HTTP --->  Web pane
   `sunucu/*.sql`.
 - Web panel (`web/app.py`): personel, kart, rapor, cihaz durumu yönetimi.
 
+## Belgeler
+
+| Belge | İçerik |
+|---|---|
+| [`ISLETIM-SISTEMI.md`](ISLETIM-SISTEMI.md) | Pi OS (Bookworm/Wayland) ve Windows sunucu kurulumu, açılış sırası, ağ, sorun giderme |
+| [`DEVRE-SEMASI.svg`](DEVRE-SEMASI.svg) | Devre şeması: röle, selenoid, flyback diyot, buzzer, LED'ler, MC38 |
+| [`DONANIM-SEMASI.md`](DONANIM-SEMASI.md) | Pin haritası, yazılım mimarisi, durum makinesi, ayarlar |
+| [`FIZIKSEL-GUVENLIK.md`](FIZIKSEL-GUVENLIK.md) | Kaçış yolu, fail-safe/fail-secure kararı, açık riskler |
+
 ## Kapı donanımı
 
 Tam pin haritası, bağlantı şeması ve ayar listesi: `DONANIM-SEMASI.md`.
+Çizili devre şeması: `DEVRE-SEMASI.svg`.
+
+![Devre şeması](DEVRE-SEMASI.svg)
 
 | İşlev | BCM | Fiziksel pin |
 |---|---|---|
@@ -86,6 +98,9 @@ Kaynak: https://github.com/opencv/opencv_zoo. Pi'de internet yok, dosyalar
 `scp` ile taşınır. Yollar: `app/config.py -> YUZ_MODEL_DIR`.
 
 ### Raspberry Pi sistem ayarı
+
+İşletim sistemi düzeyindeki tam kurulum (autologin, ekran döndürme,
+autostart, NTP, güvenlik duvarı): `ISLETIM-SISTEMI.md`.
 
 - `raspi-config` ile kamerayı etkinleştir (Pi kamera kullanılıyorsa).
 - USB RFID okuyucu için ek ayar gerekmez; kullanıcı `input` grubunda

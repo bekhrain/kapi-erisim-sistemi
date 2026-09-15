@@ -1,0 +1,204 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="760" viewBox="0 0 1100 760" font-family="Segoe UI, Arial, sans-serif" font-size="13">
+  <title>Kapı Erişim Sistemi — Devre Şeması</title>
+  <defs>
+    <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3">
+      <circle cx="3" cy="3" r="2.5" fill="#222"/>
+    </marker>
+  </defs>
+  <style>
+    .w  { stroke:#222; stroke-width:1.6; fill:none; }
+    .w5 { stroke:#c0392b; stroke-width:2; fill:none; }
+    .w12{ stroke:#d35400; stroke-width:2.4; fill:none; }
+    .gnd{ stroke:#222; stroke-width:1.6; fill:none; }
+    .box{ fill:#fff; stroke:#222; stroke-width:1.4; }
+    .pi { fill:#f4f8f4; stroke:#2e7d32; stroke-width:2; }
+    .lbl{ fill:#222; }
+    .sm { fill:#555; font-size:11px; }
+    .ttl{ font-size:18px; font-weight:600; fill:#222; }
+    .pin{ font-size:11px; font-weight:600; fill:#2e7d32; }
+    .dash{ stroke:#888; stroke-width:1.4; stroke-dasharray:5 4; fill:none; }
+    .note{ fill:#fff8e1; stroke:#e0a800; stroke-width:1; }
+  </style>
+
+  <rect x="0" y="0" width="1100" height="760" fill="#fff"/>
+  <text x="24" y="34" class="ttl">Kapı Erişim Sistemi — Devre Şeması</text>
+  <text x="24" y="54" class="sm">Raspberry Pi 5 · 40 pin başlık (BCM numaraları) · Kod: app/hardware/kapi_donanim.py · Pinler config.py'den değiştirilebilir</text>
+
+  <!-- ================= Raspberry Pi ================= -->
+  <rect x="40" y="90" width="230" height="560" rx="10" class="pi"/>
+  <text x="155" y="118" text-anchor="middle" font-size="15" font-weight="600" fill="#2e7d32">Raspberry Pi 5</text>
+  <text x="155" y="136" text-anchor="middle" class="sm">Raspberry Pi OS Bookworm</text>
+
+  <!-- pin stubs on right edge: y positions -->
+  <!-- 5V pin2 -->
+  <line x1="270" y1="180" x2="300" y2="180" class="w5"/>
+  <text x="262" y="184" text-anchor="end" class="pin">5V (pin 2)</text>
+  <!-- GPIO17 pin11 -->
+  <line x1="270" y1="230" x2="300" y2="230" class="w"/>
+  <text x="262" y="234" text-anchor="end" class="pin">GPIO17 (pin 11)</text>
+  <!-- GPIO27 pin13 -->
+  <line x1="270" y1="330" x2="300" y2="330" class="w"/>
+  <text x="262" y="334" text-anchor="end" class="pin">GPIO27 (pin 13)</text>
+  <!-- GPIO5 pin29 -->
+  <line x1="270" y1="400" x2="300" y2="400" class="w"/>
+  <text x="262" y="404" text-anchor="end" class="pin">GPIO5 (pin 29)</text>
+  <!-- GPIO6 pin31 -->
+  <line x1="270" y1="440" x2="300" y2="440" class="w"/>
+  <text x="262" y="444" text-anchor="end" class="pin">GPIO6 (pin 31)</text>
+  <!-- GPIO13 pin33 -->
+  <line x1="270" y1="480" x2="300" y2="480" class="w"/>
+  <text x="262" y="484" text-anchor="end" class="pin">GPIO13 (pin 33)</text>
+  <!-- GPIO26 pin37 -->
+  <line x1="270" y1="550" x2="300" y2="550" class="w"/>
+  <text x="262" y="554" text-anchor="end" class="pin">GPIO26 (pin 37)</text>
+  <text x="262" y="568" text-anchor="end" class="sm">iç pull-up açık</text>
+  <!-- GND pin6 -->
+  <line x1="270" y1="620" x2="300" y2="620" class="gnd"/>
+  <text x="262" y="624" text-anchor="end" class="pin">GND (pin 6/9/14…)</text>
+
+  <!-- Pi left side: USB / HDMI -->
+  <text x="52" y="300" class="sm">USB:</text>
+  <text x="52" y="316" class="sm">• 13,56 MHz RFID okuyucu</text>
+  <text x="52" y="330" class="sm">   (klavye taklidi, /dev/input)</text>
+  <text x="52" y="346" class="sm">• Kamera (/dev/video0)</text>
+  <text x="52" y="362" class="sm">• Dokunmatik panel</text>
+  <text x="52" y="390" class="sm">HDMI:</text>
+  <text x="52" y="406" class="sm">• 7" ekran, dikey 600×1024</text>
+  <text x="52" y="434" class="sm">Ethernet:</text>
+  <text x="52" y="450" class="sm">• 10.40.81.4 → sunucu 3306</text>
+  <text x="52" y="478" class="sm">Güç:</text>
+  <text x="52" y="494" class="sm">• 5 V / 5 A USB-C adaptör</text>
+
+  <!-- ================= GND bus (vertical) ================= -->
+  <line x1="300" y1="620" x2="1040" y2="620" class="gnd"/>
+  <text x="1046" y="624" class="lbl">GND</text>
+  <!-- ground symbol -->
+  <line x1="1020" y1="620" x2="1020" y2="640" class="gnd"/>
+  <line x1="1008" y1="640" x2="1032" y2="640" class="gnd"/>
+  <line x1="1012" y1="646" x2="1028" y2="646" class="gnd"/>
+  <line x1="1016" y1="652" x2="1024" y2="652" class="gnd"/>
+
+  <!-- ================= Relay module ================= -->
+  <rect x="380" y="150" width="170" height="130" rx="6" class="box"/>
+  <text x="465" y="172" text-anchor="middle" font-weight="600">Röle kartı (1 kanal)</text>
+  <text x="465" y="188" text-anchor="middle" class="sm">aktif-düşük: IN = GND → çeker</text>
+  <!-- VCC -->
+  <line x1="300" y1="180" x2="380" y2="180" class="w5"/>
+  <text x="388" y="212" class="sm">VCC</text>
+  <line x1="380" y1="180" x2="380" y2="208" class="w5"/>
+  <!-- IN -->
+  <line x1="300" y1="230" x2="380" y2="230" class="w"/>
+  <text x="388" y="234" class="sm">IN</text>
+  <!-- GND -->
+  <text x="388" y="266" class="sm">GND</text>
+  <line x1="380" y1="262" x2="340" y2="262" class="gnd"/>
+  <line x1="340" y1="262" x2="340" y2="620" class="gnd" marker-end="url(#dot)"/>
+  <!-- contacts -->
+  <text x="542" y="212" text-anchor="end" class="sm">COM</text>
+  <text x="542" y="252" text-anchor="end" class="sm">NO</text>
+  <line x1="550" y1="208" x2="600" y2="208" class="w12"/>
+  <line x1="550" y1="248" x2="600" y2="248" class="w12"/>
+  <!-- switch symbol -->
+  <line x1="518" y1="208" x2="536" y2="238" class="w"/>
+  <circle cx="518" cy="208" r="2" fill="#222"/>
+  <circle cx="518" cy="248" r="2" fill="#222"/>
+
+  <!-- 12 V adapter -->
+  <rect x="620" y="90" width="150" height="70" rx="6" class="box"/>
+  <text x="695" y="114" text-anchor="middle" font-weight="600">12 V adaptör</text>
+  <text x="695" y="132" text-anchor="middle" class="sm">≥ 1 A, ayrı besleme</text>
+  <text x="695" y="148" text-anchor="middle" class="sm">(Pi'nin 5 V hattından DEĞİL)</text>
+  <text x="648" y="180" class="sm">+12 V</text>
+  <text x="758" y="180" class="sm">0 V</text>
+  <!-- +12 to COM -->
+  <line x1="640" y1="160" x2="640" y2="208" class="w12"/>
+  <line x1="600" y1="208" x2="640" y2="208" class="w12"/>
+  <!-- 0V to GND bus -->
+  <line x1="750" y1="160" x2="750" y2="620" class="gnd" marker-end="url(#dot)"/>
+
+  <!-- Solenoid lock -->
+  <line x1="600" y1="248" x2="820" y2="248" class="w12"/>
+  <rect x="820" y="220" width="130" height="56" rx="6" class="box"/>
+  <text x="885" y="243" text-anchor="middle" font-weight="600">Selenoid kilit</text>
+  <text x="885" y="261" text-anchor="middle" class="sm">12 V DC, ~0,5 A</text>
+  <line x1="950" y1="248" x2="990" y2="248" class="w12"/>
+  <line x1="990" y1="248" x2="990" y2="620" class="gnd" marker-end="url(#dot)"/>
+  <!-- flyback diode across solenoid: cathode to +12V side (x=820), anode to GND side (x=950) -->
+  <line x1="820" y1="248" x2="820" y2="300" class="w"/>
+  <line x1="950" y1="248" x2="950" y2="300" class="w"/>
+  <line x1="820" y1="300" x2="870" y2="300" class="w"/>
+  <line x1="900" y1="300" x2="950" y2="300" class="w"/>
+  <!-- diode: anode right (950 side), cathode left (820 side): triangle points left -->
+  <polygon points="900,290 900,310 872,300" fill="#222"/>
+  <line x1="872" y1="290" x2="872" y2="310" class="w"/>
+  <text x="885" y="326" text-anchor="middle" class="sm">1N4007 flyback</text>
+  <text x="885" y="340" text-anchor="middle" class="sm">(katot +12 V tarafında)</text>
+
+  <!-- Exit button (optional, parallel to relay contacts) -->
+  <line x1="600" y1="208" x2="600" y2="380" class="dash"/>
+  <line x1="600" y1="380" x2="640" y2="380" class="dash"/>
+  <circle cx="640" cy="380" r="2.5" fill="#888"/>
+  <line x1="640" y1="380" x2="672" y2="368" class="dash"/>
+  <circle cx="680" cy="380" r="2.5" fill="#888"/>
+  <line x1="680" y1="380" x2="720" y2="380" class="dash"/>
+  <line x1="720" y1="380" x2="720" y2="248" class="dash"/>
+  <text x="660" y="402" text-anchor="middle" class="sm">İçeriden çıkış butonu (isteğe bağlı)</text>
+  <text x="660" y="416" text-anchor="middle" class="sm">röle kontağına paralel, Pi'den bağımsız</text>
+
+  <!-- ================= Buzzer ================= -->
+  <line x1="300" y1="330" x2="420" y2="330" class="w"/>
+  <rect x="420" y="312" width="90" height="36" rx="6" class="box"/>
+  <text x="465" y="335" text-anchor="middle">Buzzer (aktif)</text>
+  <text x="424" y="308" class="sm">+</text>
+  <text x="504" y="308" class="sm">−</text>
+  <line x1="510" y1="330" x2="560" y2="330" class="w"/>
+  <line x1="560" y1="330" x2="560" y2="620" class="gnd" marker-end="url(#dot)"/>
+
+  <!-- ================= LEDs ================= -->
+  <!-- red -->
+  <line x1="300" y1="400" x2="360" y2="400" class="w"/>
+  <rect x="360" y="392" width="44" height="16" class="box"/>
+  <text x="382" y="388" text-anchor="middle" class="sm">330 Ω</text>
+  <line x1="404" y1="400" x2="440" y2="400" class="w"/>
+  <polygon points="440,390 440,410 458,400" fill="#c0392b"/>
+  <line x1="458" y1="390" x2="458" y2="410" class="w"/>
+  <line x1="458" y1="400" x2="500" y2="400" class="w"/>
+  <text x="510" y="404" class="sm">LED kırmızı</text>
+  <line x1="500" y1="400" x2="500" y2="620" class="gnd" marker-end="url(#dot)"/>
+  <!-- yellow -->
+  <line x1="300" y1="440" x2="360" y2="440" class="w"/>
+  <rect x="360" y="432" width="44" height="16" class="box"/>
+  <text x="382" y="428" text-anchor="middle" class="sm">330 Ω</text>
+  <line x1="404" y1="440" x2="440" y2="440" class="w"/>
+  <polygon points="440,430 440,450 458,440" fill="#e0a800"/>
+  <line x1="458" y1="430" x2="458" y2="450" class="w"/>
+  <line x1="458" y1="440" x2="500" y2="440" class="w" marker-end="url(#dot)"/>
+  <text x="510" y="444" class="sm">LED sarı</text>
+  <!-- green -->
+  <line x1="300" y1="480" x2="360" y2="480" class="w"/>
+  <rect x="360" y="472" width="44" height="16" class="box"/>
+  <text x="382" y="468" text-anchor="middle" class="sm">330 Ω</text>
+  <line x1="404" y1="480" x2="440" y2="480" class="w"/>
+  <polygon points="440,470 440,490 458,480" fill="#2e7d32"/>
+  <line x1="458" y1="470" x2="458" y2="490" class="w"/>
+  <line x1="458" y1="480" x2="500" y2="480" class="w" marker-end="url(#dot)"/>
+  <text x="510" y="484" class="sm">LED yeşil</text>
+  <text x="510" y="500" class="sm">(3'lü trafik lambası)</text>
+
+  <!-- ================= MC38 sensor ================= -->
+  <line x1="300" y1="550" x2="370" y2="550" class="w"/>
+  <rect x="370" y="530" width="170" height="40" rx="6" class="box"/>
+  <text x="455" y="548" text-anchor="middle">MC38 reed switch</text>
+  <text x="455" y="563" text-anchor="middle" class="sm">NC · kapı kapalı = kontak kapalı</text>
+  <line x1="540" y1="550" x2="640" y2="550" class="w"/>
+  <line x1="640" y1="550" x2="640" y2="620" class="gnd" marker-end="url(#dot)"/>
+  <text x="550" y="540" class="sm">kapı kapalı → GPIO26 = LOW</text>
+  <text x="550" y="580" class="sm">kapı açık → pull-up → HIGH</text>
+
+  <!-- ================= Notes ================= -->
+  <rect x="24" y="672" width="1052" height="72" rx="6" class="note"/>
+  <text x="36" y="692" class="lbl">Notlar</text>
+  <text x="36" y="710" class="sm">1) Selenoid ~0,5 A çeker; Pi'nin 5 V hattından beslenirse Pi resetlenir — ayrı 12 V adaptör şart. Röle yalnızca sinyal alır, gücü adaptörden anahtarlar.</text>
+  <text x="36" y="726" class="sm">2) Flyback diyot bobin kesilince oluşan ters gerilimi söndürür; katot +12 V, anot GND tarafına. 3) Bütün GND'ler ortak: Pi, röle, adaptör 0 V, LED, buzzer, MC38.</text>
+  <text x="36" y="742" class="sm">4) Röle ters çalışıyorsa (boşta kapı açık) KAPI_ROLE_AKTIF_DUSUK = 0. 5) Kaçış yolu üzerindeki kapıda fail-safe kilit + çıkış butonu gerekir — bkz. FIZIKSEL-GUVENLIK.md.</text>
+</svg>

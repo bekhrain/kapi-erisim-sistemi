@@ -31,6 +31,12 @@ Pin numaraları `config.py` üzerinden değiştirilebilir (env değişkeni veya
 
 ## 2. Bağlantı şeması
 
+Çizili sürüm: [`DEVRE-SEMASI.svg`](DEVRE-SEMASI.svg)
+
+![Devre şeması](DEVRE-SEMASI.svg)
+
+Metin sürümü:
+
 ```
                         +5V ── (Pi'den ÇEKME) ──╳
    ┌───────────────┐
