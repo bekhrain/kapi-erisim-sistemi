@@ -32,6 +32,7 @@ Pi (client)  <--- MySQL --->  Sunucu (ana veritabanı)  <--- HTTP --->  Web pane
 
 | Belge | İçerik |
 |---|---|
+| [`KURULUM.md`](KURULUM.md) | PC/Windows kurulumu: mock mod, yüz tanıma modelleri, MySQL + web paneli, sorun giderme |
 | [`ISLETIM-SISTEMI.md`](ISLETIM-SISTEMI.md) | Pi OS (Bookworm/Wayland) ve Windows sunucu kurulumu, açılış sırası, ağ, sorun giderme |
 | [`DEVRE-SEMASI.svg`](DEVRE-SEMASI.svg) | Devre şeması: röle, selenoid, flyback diyot, buzzer, LED'ler, MC38 |
 | [`DONANIM-SEMASI.md`](DONANIM-SEMASI.md) | Pin haritası, yazılım mimarisi, durum makinesi, ayarlar |
@@ -71,6 +72,9 @@ Kod `app/hardware/kapi_donanim.py` içindedir ve `gpiozero` kullanır
 değilse mock çalışır: pin sürülmez, eylemler terminale yazılır.
 
 ## Kurulum
+
+Tek bir bilgisayarda (Windows / masaüstü) sıfırdan ayağa kaldırmak için
+adım adım anlatım: [`KURULUM.md`](KURULUM.md). Aşağısı özet.
 
 ### Python paketleri
 
